@@ -1,0 +1,14 @@
+# secret
+scripts/s3ic.py
+config.ini
+
+# python
+*.mypy_cache*
+*__pycache__*
+backups
+*.DS_Store
+venv
+
+# misc
+.vscode
+.pytest_cache
