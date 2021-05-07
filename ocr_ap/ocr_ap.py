@@ -1,22 +1,42 @@
+import json
+import pathlib
 import random
 import re
 import shutil
 import tempfile
 import traceback
 from functools import lru_cache
-from typing import Dict, List, Literal, Set, Tuple
+from typing import Dict, Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
-from envinorma.utils import typed_tqdm
 from ocrmypdf import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
 from swiftclient.service import SwiftService, SwiftUploadObject
+from tqdm import tqdm
 
-from data_build.load import load_all_georisques_ids
+T = TypeVar('T')
+
+
+def typed_tqdm(
+    collection: Iterable[T], desc: Optional[str] = None, leave: bool = True, disable: bool = False
+) -> Iterable[T]:
+    return tqdm(collection, desc=desc, leave=leave, disable=disable)
+
+
+def _data_filename() -> str:
+    candidate = pathlib.Path(__file__).parent / 'georisques_ids.json'
+    if not candidate.exists():
+        raise ValueError('Data file not found.')
+    return str(candidate)
+
 
 GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-durable.gouv.fr/commun'
 BucketName = Literal['ap']
 configure_logging(Verbosity.quiet)
+
+
+def _load_all_georisques_ids() -> List[str]:
+    return json.load(open(_data_filename()))
 
 
 def _check_upload(results: List[Dict]) -> None:
@@ -119,7 +139,7 @@ def _compute_advancement() -> None:
     ids_with_statuses = _fetch_already_processed_ids_with_statuses()
     error_ids = {id_ for id_, status in ids_with_statuses if status == 'error'}
     success_ids = {id_ for id_, status in ids_with_statuses if status == 'success'}
-    all_ids = set(load_all_georisques_ids())
+    all_ids = set(_load_all_georisques_ids())
     print(f'Advancement: {len(error_ids | success_ids)}/{len(all_ids)}')
     print(f'Nb errors: {len(error_ids)}')
 
@@ -158,7 +178,7 @@ def _fetch_already_processed_ids() -> Set[str]:
 
 def _load_remaining_ids() -> List[str]:
     already_processed_ids = _fetch_already_processed_ids()
-    ids_to_process = set(load_all_georisques_ids())
+    ids_to_process = set(_load_all_georisques_ids())
     return list(ids_to_process - already_processed_ids)
 
 

@@ -1,11 +1,8 @@
 import os
 from typing import Literal
 
-from envinorma.utils import safely_replace
-
 from config import SECRET_DATA_FOLDER, SEED_FOLDER
 
-GEORISQUES_IDS_FILENAME = safely_replace(__file__, 'data_build/filenames.py', 'data/georisque_ids.json')
 ENRICHED_OUTPUT_FOLDER = os.path.join(SEED_FOLDER, 'enriched_arretes')
 AM_LIST_FILENAME = os.path.join(SEED_FOLDER, 'am_list.json')
 UNIQUE_CLASSEMENTS_FILENAME = os.path.join(SEED_FOLDER, 'unique_classements.csv')

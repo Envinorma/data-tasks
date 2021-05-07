@@ -1,3 +1,4 @@
+-e git+https://github.com/envinorma/envinorma-data.git
 tqdm==4.30.0
 pandas==1.2.4
 python-swiftclient==3.11.1

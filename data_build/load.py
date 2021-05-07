@@ -9,7 +9,7 @@ from envinorma.data.document import Document, DocumentType
 from envinorma.data.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 
 from data_build.build.build_installations import load_installations_csv
-from data_build.filenames import GEORISQUES_IDS_FILENAME, Dataset, dataset_filename
+from data_build.filenames import Dataset, dataset_filename
 from data_build.utils import typed_tqdm
 
 
@@ -72,7 +72,3 @@ def load_aps(dataset: Dataset) -> List[Document]:
         _dataframe_record_to_ap(record)
         for record in typed_tqdm(dataframe.to_dict(orient='records'), 'Loading aps', leave=False)
     ]
-
-
-def load_all_georisques_ids() -> List[str]:
-    return json.load(open(GEORISQUES_IDS_FILENAME))
