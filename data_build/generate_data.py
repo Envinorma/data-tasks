@@ -35,11 +35,11 @@ def run():
     # build_all_installations_datasets()
     # build_classements_csv()
     # build_all_classement_datasets()
-    # dump_aps('sample')
     # download_georisques_documents()
     # build_all_document_datasets()
+    # dump_aps('sample')
     # dump_ap_datasets()
-    # dump_georisques_ids()
+    # dump_georisques_ids(filename)
     _check_seeds()
 
 
