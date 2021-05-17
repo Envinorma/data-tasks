@@ -1,0 +1,6 @@
+git+https://github.com/envinorma/envinorma-data.git@refacto-split-repo
+leginorma==0.0.3
+requests==2.25.1
+tabulate==0.8.9
+text_diff==0.0.3
+tqdm==4.30.0

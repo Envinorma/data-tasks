@@ -3,15 +3,14 @@ import os
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+from envinorma.data import ID_TO_AM_MD, AMMetadata, ArreteMinisteriel
+from envinorma.parametrization import Parametrization
+from envinorma.parametrization.am_with_versions import AMVersions, apply_parametrization, enrich_am
+from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, write_json
 from tqdm import tqdm
 
-from envinorma.parametrization.am_with_versions import AMVersions, apply_parametrization, enrich_am
-
-from config import generate_parametric_descriptor, DATA_FETCHER
-from envinorma.data import AMMetadata, ArreteMinisteriel, ID_TO_AM_MD
+from data_build.config import DATA_FETCHER, generate_parametric_descriptor
 from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER, UNIQUE_CLASSEMENTS_FILENAME
-from envinorma.parametrization import Parametrization
-from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, write_json
 
 _ID_TO_AM_MD = {id_: md for id_, md in ID_TO_AM_MD.items() if not id_.startswith('FAKE')}
 

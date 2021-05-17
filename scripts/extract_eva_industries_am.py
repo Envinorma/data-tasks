@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 from envinorma.data import ArreteMinisteriel
 from envinorma.utils import write_json
 
-from config import SEED_FOLDER
+from data_build.config import SEED_FOLDER
 
 _OUTPUT_FOLDER = 'eva_seeds'
 _INPUT_FOLDER = SEED_FOLDER

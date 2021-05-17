@@ -13,7 +13,7 @@ from leginorma.models import LegifranceText
 from text_diff import AddedLine, ModifiedLine, RemovedLine, TextDifferences, UnchangedLine, text_differences
 from tqdm import tqdm
 
-from config import DATA_FETCHER, LEGIFRANCE_CLIENT_ID, LEGIFRANCE_CLIENT_SECRET
+from data_build.config import DATA_FETCHER, LEGIFRANCE_CLIENT_ID, LEGIFRANCE_CLIENT_SECRET
 
 
 def _load_legifrance_version(am_id: str) -> ArreteMinisteriel:

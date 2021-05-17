@@ -8,7 +8,7 @@ from envinorma.data import ID_TO_AM_MD
 from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions
 from envinorma.utils import write_json
 
-from config import DATA_FETCHER, create_folder_and_generate_parametric_filename
+from data_build.config import DATA_FETCHER, create_folder_and_generate_parametric_filename
 
 TEST_ID = 'JORFTEXT000023081678'
 
