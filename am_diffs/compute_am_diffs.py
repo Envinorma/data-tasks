@@ -80,14 +80,17 @@ class _AMDifferences:
 @dataclass
 class _AMSetDifferences:
     differences: List[_AMDifferences]
+    not_found_texts: int
 
     def __post_init__(self):
         self.differences.sort(key=lambda x: x.modification_date, reverse=True)
 
 
 def _build_message(diffs: _AMSetDifferences) -> str:
+    nb_ams = diffs.not_found_texts + len(diffs.differences)
+    titles = ['*AM differences*', f'{diffs.not_found_texts}/{nb_ams} AM non trouvés']
     rows = [diff.block_description for diff in diffs.differences if diff.modified_in_last_month]
-    return '\n\n'.join(rows)
+    return '\n\n'.join(titles + rows)
 
 
 def _build_short_message(diffs: _AMSetDifferences) -> str:
@@ -168,7 +171,9 @@ def _compute_diffs() -> _AMSetDifferences:
     am_list = list(ID_TO_AM_MD.values())
     candidates = [_compute_am_diff(am_md) for am_md in typed_tqdm(am_list, 'Computing diffs')]
     print("Computed diff.")
-    return _AMSetDifferences([candidate for candidate in candidates if candidate])
+    am_diff = [candidate for candidate in candidates if candidate]
+    nb_not_found_am = len([candidate for candidate in candidates if not candidate])
+    return _AMSetDifferences(am_diff, nb_not_found_am)
 
 
 def compute_and_dispatch_diff() -> None:
