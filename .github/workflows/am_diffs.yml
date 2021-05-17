@@ -26,5 +26,6 @@ jobs:
           LEGIFRANCE_CLIENT_ID: ${{ secrets.LEGIFRANCE_CLIENT_ID }}
           LEGIFRANCE_CLIENT_SECRET: ${{ secrets.LEGIFRANCE_CLIENT_SECRET }}
           SLACK_AM_CHANNEL: ${{ secrets.SLACK_AM_CHANNEL }}
+          PYTHONPATH: "."
         run: |
           python3 am_diffs/compute_am_diffs.py
