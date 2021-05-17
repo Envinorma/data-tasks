@@ -86,7 +86,7 @@ class _AMSetDifferences:
 
 
 def _build_message(diffs: _AMSetDifferences) -> str:
-    rows = [diff.block_description for diff in diffs.differences]  # if diff.modified_in_last_month]
+    rows = [diff.block_description for diff in diffs.differences if diff.modified_in_last_month]
     return '\n\n'.join(rows)
 
 
@@ -129,7 +129,7 @@ def _dispatch_to_ovh(diffs: _AMSetDifferences) -> None:
 
 def _dispatch_diffs(diffs: _AMSetDifferences) -> None:
     _dispatch_to_stdout(diffs)
-    # _dispatch_to_slack(diffs)
+    _dispatch_to_slack(diffs)
     # _dispatch_to_email(diffs)
     # _dispatch_to_ovh(diffs)
 
@@ -165,7 +165,7 @@ def _compute_am_diff(am_md: AMMetadata) -> Optional[_AMDifferences]:
 
 
 def _compute_diffs() -> _AMSetDifferences:
-    am_list = list(ID_TO_AM_MD.values())[:3]
+    am_list = list(ID_TO_AM_MD.values())
     candidates = [_compute_am_diff(am_md) for am_md in typed_tqdm(am_list, 'Computing diffs')]
     print("Computed diff.")
     return _AMSetDifferences([candidate for candidate in candidates if candidate])
