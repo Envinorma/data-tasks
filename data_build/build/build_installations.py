@@ -12,8 +12,9 @@ from data_build.filenames import DGPR_INSTALLATIONS_FILENAME, Dataset, dataset_f
 def _load_A_E_installations() -> pd.DataFrame:
     installations_with_duplicates = pd.read_csv(DGPR_INSTALLATIONS_FILENAME, sep=';', dtype='str')
     installations_with_D = installations_with_duplicates.drop_duplicates()
+    publishable_regimes = {'A', 'E', 'S', '2'}
     installations_with_duplicated_ids = installations_with_D[
-        installations_with_D['régime_etab_en_vigueur'].apply(lambda x: x in ('A', 'E'))
+        installations_with_D['régime_etab_en_vigueur'].apply(lambda x: x in publishable_regimes)
     ]
     return installations_with_duplicated_ids.groupby('code_s3ic').last().reset_index()
 

@@ -38,7 +38,7 @@ def _restore_backup(backup_file: str):
     subprocess.Popen(['pg_restore', '-d', 'am_bu', '--role', 'remidelbouys', backup_file])
 
 
-_BACKUP_FOLDER = pathlib.Path('.').parent.joinpath('backups')
+_BACKUP_FOLDER = pathlib.Path('.').parent / 'backups'
 
 
 def run():
@@ -46,7 +46,7 @@ def run():
         raise ValueError('Cannot drop remote tables.')
     _drop_tables()
     filename = _get_most_backup_filename(str(_BACKUP_FOLDER))
-    _restore_backup(str(_BACKUP_FOLDER.joinpath(filename)))
+    _restore_backup(str(_BACKUP_FOLDER / filename))
 
 
 if __name__ == '__main__':

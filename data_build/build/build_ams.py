@@ -22,7 +22,7 @@ def _dump_am_versions(am_id: str, versions: AMVersions) -> None:
         write_json(version.to_dict(), full_path)
 
 
-def _copy_enriched_am(id_: str, am: ArreteMinisteriel, parametrization: Parametrization) -> None:
+def _generate_and_dump_enriched_ams(id_: str, am: ArreteMinisteriel, parametrization: Parametrization) -> None:
     versions = apply_parametrization(id_, am, parametrization, _ID_TO_AM_MD[id_])
     if versions:
         _dump_am_versions(id_, versions)
@@ -79,7 +79,9 @@ def generate_ams() -> None:
     all_ams = [am.to_dict() for am_id, am in id_to_am.items() if am_id not in AM1510_IDS]
     for id_ in tqdm(_ID_TO_AM_MD, 'Enriching AM.'):
         if statuses[id_] == AMStatus.VALIDATED:
-            _copy_enriched_am(id_, id_to_am[id_], parametrizations.get(id_) or Parametrization([], []))
+            _generate_and_dump_enriched_ams(
+                id_, id_to_am[id_], parametrizations.get(id_) or Parametrization([], [], [])
+            )
             if id_ in AM1510_IDS:
                 all_ams.extend(_load_1510_am_no_date())
     write_json(all_ams, AM_LIST_FILENAME, pretty=False)

@@ -5,9 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from envinorma.data.classement import DetailedClassement, DetailedRegime, State
-from data_build.load import  load_installation_ids
+from data_build.load import load_installation_ids
 from data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
-from envinorma.utils import write_json
 
 
 def _load_unique_classements() -> pd.DataFrame:
