@@ -19,6 +19,7 @@ def _drop_tables():
         """DROP TABLE IF EXISTS initial_am""",
         """DROP TABLE IF EXISTS structured_am""",
         """DROP TABLE IF EXISTS parametrization""",
+        """DROP TABLE IF EXISTS am_metadata""",
     )
     cur = _CONNECTION.cursor()
     for command in commands:
