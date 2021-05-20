@@ -118,9 +118,9 @@ def _print_input_id(func):
     return _func
 
 
-def _check_publication_date(publication_date: Optional[date]):
-    if not publication_date:
-        raise ValueError('Expecting publication_date to be defined')
+def _check_date_of_signature(date_of_signature: Optional[date]):
+    if not date_of_signature:
+        raise ValueError('Expecting date_of_signature to be defined')
 
 
 @_print_input_id
@@ -135,7 +135,10 @@ def _check_am(am: ArreteMinisteriel) -> None:
     assert am.aida_url is not None
     _check_references(am)
     _check_table_extraction(am)
-    _check_publication_date(am.publication_date)
+    _check_date_of_signature(am.date_of_signature)
+    # Below date must be kept as long as publication_date keeps being used in web app, remove after
+    # (because publication_date is not the right term.)
+    _check_date_of_signature(am.publication_date) 
 
 
 def _load_am_list(am_list_filename: str) -> List[ArreteMinisteriel]:
