@@ -2,10 +2,9 @@ from datetime import date
 from typing import Any, Dict, cast
 
 import pandas
-from tqdm import tqdm
-
 from envinorma.data import Regime
 from envinorma.data.installation import ActivityStatus, Installation, InstallationFamily, Seveso
+from tqdm import tqdm
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:

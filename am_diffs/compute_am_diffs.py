@@ -3,14 +3,14 @@ from datetime import date, datetime, time, timedelta
 from typing import Iterable, List, Optional, TypeVar
 
 import requests
-from envinorma.data import ID_TO_AM_MD, AMMetadata
+from envinorma.data import AMMetadata
 from leginorma import LegifranceText
 from leginorma.api import LegifranceRequestError
 from tabulate import tabulate
 from text_diff import TextDifferences, text_differences
 from tqdm import tqdm
 
-from am_diffs.config import AM_SLACK_URL, get_legifrance_client
+from am_diffs.config import AM_SLACK_URL, DATA_FETCHER, get_legifrance_client
 
 T = TypeVar('T')
 
@@ -168,7 +168,7 @@ def _compute_am_diff(am_md: AMMetadata) -> Optional[_AMDifferences]:
 
 
 def _compute_diffs() -> _AMSetDifferences:
-    am_list = list(ID_TO_AM_MD.values())
+    am_list = list(DATA_FETCHER.load_all_am_metadata().values())
     candidates = [_compute_am_diff(am_md) for am_md in typed_tqdm(am_list, 'Computing diffs')]
     print("Computed diff.")
     am_diff = [candidate for candidate in candidates if candidate]

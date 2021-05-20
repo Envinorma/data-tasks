@@ -72,7 +72,7 @@ def _modify_and_keep_final_installations_cols(installations: pd.DataFrame) -> pd
     installations['active'] = installations['active'].fillna('')  # type: ignore
     installations['seveso'] = installations['seveso'].fillna('').apply(_map_seveso)  # type: ignore
     expected_keys = [x for x in Installation.__dataclass_fields__]  # type: ignore
-    return installations[expected_keys]
+    return cast(pd.DataFrame, installations[expected_keys])
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:

@@ -4,7 +4,6 @@ structured version and its parametrization.
 '''
 from typing import Optional
 
-from envinorma.data import ID_TO_AM_MD
 from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions
 from envinorma.utils import write_json
 
@@ -22,7 +21,7 @@ def _dump(am_id: str, versions: Optional[AMVersions]) -> None:
 
 
 def handle_am(am_id: str) -> None:
-    metadata = ID_TO_AM_MD.get(am_id)
+    metadata = DATA_FETCHER.load_am_metadata(am_id)
     if not metadata:
         raise ValueError(f'AM {am_id} not found.')
     final_am = generate_am_with_versions(

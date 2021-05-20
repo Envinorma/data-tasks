@@ -5,14 +5,13 @@ of each AM among all active installations.
 from collections import Counter
 from typing import Dict, List
 
-from envinorma.data import ID_TO_AM_MD
-
+from data_build.config import DATA_FETCHER
 from data_build.load import load_classements
 
 
 def _load_classement_to_am() -> Dict[str, List[str]]:
     classement_to_ams: Dict[str, List[str]] = {}
-    for am_id, am in ID_TO_AM_MD.items():
+    for am_id, am in DATA_FETCHER.load_all_am_metadata().items():
         for cl in am.classements:
             cl_str = f'{cl.rubrique}-{cl.regime.value}'
             if cl_str not in classement_to_ams:

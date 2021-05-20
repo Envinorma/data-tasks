@@ -6,9 +6,9 @@ import random
 from typing import List
 from urllib.request import HTTPError, urlretrieve  # type: ignore
 
+from envinorma.data.document import Document, DocumentType
 from tqdm import tqdm
 
-from envinorma.data.document import Document, DocumentType
 from data_build.build.build_documents import load_documents
 from data_build.filenames import CQUEST_URL, DOCUMENTS_FOLDER, GEORISQUES_DOWNLOAD_URL
 

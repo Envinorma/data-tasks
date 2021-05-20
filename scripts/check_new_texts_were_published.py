@@ -6,7 +6,7 @@ import random
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from envinorma.data import ID_TO_AM_MD, AMSource, ArreteMinisteriel, extract_text_lines
+from envinorma.data import AMSource, ArreteMinisteriel, extract_text_lines
 from envinorma.structure.am_structure_extraction import transform_arrete_ministeriel
 from leginorma import LegifranceClient
 from leginorma.models import LegifranceText
@@ -88,7 +88,7 @@ def _write_diff_description(am_id_to_diff: Dict[str, TextDifferences]) -> None:
 
 def run() -> None:
     changed = {}
-    for am_id, md in tqdm(ID_TO_AM_MD.items()):
+    for am_id, md in tqdm(DATA_FETCHER.load_all_am_metadata().items()):
         if md.source != AMSource.LEGIFRANCE:
             continue
         am_id = str(am_id)

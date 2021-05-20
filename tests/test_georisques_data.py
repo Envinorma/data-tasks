@@ -1,4 +1,5 @@
 from envinorma.data import Regime, RubriqueSimpleThresholds
+
 from data_build.georisques_data import _compute_regime
 
 
