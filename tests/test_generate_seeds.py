@@ -1,5 +1,5 @@
 from datetime import date
-from envinorma.data import AMApplicability, UsedDateParameter
+from envinorma.data import VersionDescriptor, UsedDateParameter
 import pytest
 import math
 
@@ -17,21 +17,21 @@ def test_is_partition():
     assert not _is_a_partition([])
 
 
-def _simple_applicability(aed_parameter: UsedDateParameter) -> AMApplicability:
-    return AMApplicability(True, [], aed_parameter, UsedDateParameter(False))
+def _simple_vd(aed_parameter: UsedDateParameter) -> VersionDescriptor:
+    return VersionDescriptor(True, [], aed_parameter, UsedDateParameter(False))
 
 
 def test_assert_is_partition_matrix():
     with pytest.raises(ValueError):
         _assert_is_partition_matrix([])
 
-    _assert_is_partition_matrix([_simple_applicability(UsedDateParameter(False))])
+    _assert_is_partition_matrix([_simple_vd(UsedDateParameter(False))])
     dt = date(2020, 1, 1)
     _assert_is_partition_matrix(
         [
-            _simple_applicability(UsedDateParameter(True, False)),
-            _simple_applicability(UsedDateParameter(True, True, None, dt)),
-            _simple_applicability(UsedDateParameter(True, True, dt, None)),
+            _simple_vd(UsedDateParameter(True, False)),
+            _simple_vd(UsedDateParameter(True, True, None, dt)),
+            _simple_vd(UsedDateParameter(True, True, dt, None)),
         ]
     )
 
@@ -39,9 +39,9 @@ def test_assert_is_partition_matrix():
     dt_ = date(2021, 1, 1)
     _assert_is_partition_matrix(
         [
-            _simple_applicability(UsedDateParameter(True, False)),
-            _simple_applicability(UsedDateParameter(True, True, None, dt)),
-            _simple_applicability(UsedDateParameter(True, True, dt, dt_)),
-            _simple_applicability(UsedDateParameter(True, True, dt_, None)),
+            _simple_vd(UsedDateParameter(True, False)),
+            _simple_vd(UsedDateParameter(True, True, None, dt)),
+            _simple_vd(UsedDateParameter(True, True, dt, dt_)),
+            _simple_vd(UsedDateParameter(True, True, dt_, None)),
         ]
     )

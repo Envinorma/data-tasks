@@ -4,7 +4,7 @@ import os
 from datetime import date
 from typing import Dict, List, Optional, Set, Tuple
 
-from envinorma.data import AMApplicability, ArreteMinisteriel, StructuredText, UsedDateParameter
+from envinorma.data import VersionDescriptor, ArreteMinisteriel, StructuredText, UsedDateParameter
 from envinorma.data.text_elements import Table
 from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
@@ -79,10 +79,10 @@ def _is_date_partition(criteria: List[_DatePair]) -> bool:
 
 
 def _group_installation_date_by_aed_date(
-    applicabilities: List[AMApplicability],
+    versions: List[VersionDescriptor],
 ) -> Dict[UsedDateParameter, List[UsedDateParameter]]:
     res: Dict[UsedDateParameter, List[UsedDateParameter]] = {}
-    for app in applicabilities:
+    for app in versions:
         if app.aed_date_parameter not in res:
             res[app.aed_date_parameter] = []
         res[app.aed_date_parameter].append(app.installation_date_parameter)
@@ -106,8 +106,8 @@ def _assert_is_partition(used_date_parameters: List[UsedDateParameter]) -> None:
         raise ValueError(f'Expecting exactly one version with no date criterion, got {nb_parameter_is_not_known}')
 
 
-def _assert_is_partition_matrix(applicabilities: List[AMApplicability]) -> None:
-    groups = _group_installation_date_by_aed_date(applicabilities)
+def _assert_is_partition_matrix(versions: List[VersionDescriptor]) -> None:
+    groups = _group_installation_date_by_aed_date(versions)
     for candidate_partition in groups.values():
         _assert_is_partition(candidate_partition)
     _assert_is_partition(list(groups.keys()))
@@ -116,22 +116,22 @@ def _assert_is_partition_matrix(applicabilities: List[AMApplicability]) -> None:
 def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel]) -> None:
     if len(ams) == 1:
         am = list(ams.values())[0]
-        app = am.applicability
+        app = am.version
         if app.aed_date_parameter.parameter_is_used or app.installation_date_parameter.parameter_is_used:
             raise ValueError(
                 'Expecting aed date and installation date to not be used in this case. '
                 f'Got {app.aed_date_parameter.parameter_is_used} and {app.installation_date_parameter.parameter_is_used}.'
             )
         return
-    _assert_is_partition_matrix([ensure_not_none(am.applicability) for am in ams.values()])
+    _assert_is_partition_matrix([ensure_not_none(am.version) for am in ams.values()])
 
 
 def _is_default(am: ArreteMinisteriel) -> bool:
-    applicability = ensure_not_none(am.applicability)
+    version_descriptor = ensure_not_none(am.version)
     return (
-        applicability.applicable
-        and not applicability.aed_date_parameter.applicable_when_value_is_known
-        and not applicability.installation_date_parameter.applicable_when_value_is_known
+        version_descriptor.applicable
+        and not version_descriptor.aed_date_parameter.applicable_when_value_is_known
+        and not version_descriptor.installation_date_parameter.applicable_when_value_is_known
     )
 
 
