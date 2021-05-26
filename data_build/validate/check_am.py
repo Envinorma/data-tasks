@@ -2,12 +2,11 @@ import json
 import math
 import os
 from datetime import date
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
-from envinorma.data import ArreteMinisteriel, DateCriterion, StructuredText
+from envinorma.data import AMApplicability, ArreteMinisteriel, StructuredText, UsedDateParameter
 from envinorma.data.text_elements import Table
-from envinorma.utils import AM1510_IDS, str_to_date
-from tqdm import tqdm
+from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
 
 def _extract_all_references(sections: List[StructuredText]) -> List[Optional[str]]:
@@ -47,12 +46,6 @@ def _check_table_extraction(am: ArreteMinisteriel) -> None:
         )
 
 
-def _parse_date(str_date: Optional[str]) -> Optional[float]:
-    if str_date is None:
-        return None
-    return str_to_date(str_date).date().toordinal()
-
-
 _Segment = Tuple[float, float]
 
 
@@ -70,41 +63,90 @@ def _is_a_partition(segments: List[_Segment]) -> bool:
     return True
 
 
-def _is_date_partition(criteria: List[DateCriterion]) -> bool:
+_DatePair = Tuple[Optional[date], Optional[date]]
+
+
+def _extract_ordinal(date_: Optional[date]) -> Optional[int]:
+    return date_.toordinal() if date_ else None
+
+
+def _is_date_partition(criteria: List[_DatePair]) -> bool:
     segments: List[_Segment] = [
-        (_parse_date(cr.left_date) or -math.inf, _parse_date(cr.right_date) or math.inf) for cr in criteria
+        (_extract_ordinal(left_date) or -math.inf, _extract_ordinal(right_date) or math.inf)
+        for left_date, right_date in criteria
     ]
     return _is_a_partition(segments)
+
+
+def _group_installation_date_by_aed_date(
+    applicabilities: List[AMApplicability],
+) -> Dict[UsedDateParameter, List[UsedDateParameter]]:
+    res: Dict[UsedDateParameter, List[UsedDateParameter]] = {}
+    for app in applicabilities:
+        if app.aed_date_parameter not in res:
+            res[app.aed_date_parameter] = []
+        res[app.aed_date_parameter].append(app.installation_date_parameter)
+    return res
+
+
+def _assert_is_partition(used_date_parameters: List[UsedDateParameter]) -> None:
+    if len(used_date_parameters) == 1:
+        assert not used_date_parameters[0].parameter_is_used
+        return
+    date_tuples: List[_DatePair] = []
+    nb_parameter_is_not_known = 0
+    for parameter in used_date_parameters:
+        if not parameter.applicable_when_value_is_known:
+            nb_parameter_is_not_known += 1
+            continue
+        date_tuples.append((parameter.left_date, parameter.right_date))
+    if not _is_date_partition(date_tuples):
+        raise ValueError(f'Expecting partition, this is not the case here {date_tuples}')
+    if nb_parameter_is_not_known != 1:
+        raise ValueError(f'Expecting exactly one version with no date criterion, got {nb_parameter_is_not_known}')
+
+
+def _assert_is_partition_matrix(applicabilities: List[AMApplicability]) -> None:
+    groups = _group_installation_date_by_aed_date(applicabilities)
+    for candidate_partition in groups.values():
+        _assert_is_partition(candidate_partition)
+    _assert_is_partition(list(groups.keys()))
 
 
 def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel]) -> None:
     if len(ams) == 1:
         am = list(ams.values())[0]
-        if not am.unique_version:
-            raise ValueError('Expecting unique_version=True when only one AM.')
+        app = am.applicability
+        if app.aed_date_parameter.parameter_is_used or app.installation_date_parameter.parameter_is_used:
+            raise ValueError(
+                'Expecting aed date and installation date to not be used in this case. '
+                f'Got {app.aed_date_parameter.parameter_is_used} and {app.installation_date_parameter.parameter_is_used}.'
+            )
         return
-    date_criteria: List[DateCriterion] = []
-    no_date_criterion: List[str] = []
-    for version_name, am in ams.items():
-        if am.installation_date_criterion:
-            date_criteria.append(am.installation_date_criterion)
-        else:
-            no_date_criterion.append(version_name)
-    if len(no_date_criterion) != 1:
-        raise ValueError(f'Expecting exactly one version with no date criterion, got {no_date_criterion}')
-    if not _is_date_partition(date_criteria):
-        raise ValueError(f'Expecting partition, this is not the case here {date_criteria}')
+    _assert_is_partition_matrix([ensure_not_none(am.applicability) for am in ams.values()])
+
+
+def _is_default(am: ArreteMinisteriel) -> bool:
+    applicability = ensure_not_none(am.applicability)
+    return (
+        applicability.applicable
+        and not applicability.aed_date_parameter.applicable_when_value_is_known
+        and not applicability.installation_date_parameter.applicable_when_value_is_known
+    )
+
+
+def _check_exactly_one_non_enriched_am(ams: Dict[str, ArreteMinisteriel]) -> None:
+    default_am = [am for am in ams.values() if _is_default(am)]
+    if len(default_am) != 1:
+        raise ValueError(f'Expecting only one default AM, got {len(default_am)}')
 
 
 def _check_enriched_am_group(ams: Dict[str, ArreteMinisteriel]) -> None:
     ids = {am.id for am in ams.values()}
     if len(ids) != 1:
         raise ValueError(f'Expecting exactly one am_id in list, got ids={ids}')
-    try:
-        _check_non_overlapping_installation_dates(ams)
-    except:
-        print(list(ids)[0])
-        raise
+    _check_non_overlapping_installation_dates(ams)
+    _check_exactly_one_non_enriched_am(ams)
 
 
 def _print_input_id(func):
@@ -123,22 +165,30 @@ def _check_date_of_signature(date_of_signature: Optional[date]):
         raise ValueError('Expecting date_of_signature to be defined')
 
 
+def _check_regimes(am: ArreteMinisteriel) -> None:
+    regimes = {clas.regime for clas in am.classements}
+    if len(regimes) != 1:
+        raise ValueError(regimes)
+
+
+def _check_non_none_fields(am: ArreteMinisteriel) -> None:
+    assert am.summary is not None
+    assert am.legifrance_url is not None
+    assert am.aida_url is not None
+
+
 @_print_input_id
 def _check_am(am: ArreteMinisteriel) -> None:
     if am.id in AM1510_IDS:
         raise ValueError('1510 should not be in AM list as such')
-    regimes = {clas.regime for clas in am.classements}
-    if len(regimes) != 1:
-        raise ValueError(regimes)
-    assert am.summary is not None
-    assert am.legifrance_url is not None
-    assert am.aida_url is not None
+    _check_regimes(am)
     _check_references(am)
     _check_table_extraction(am)
+    _check_non_none_fields(am)
     _check_date_of_signature(am.date_of_signature)
     # Below date must be kept as long as publication_date keeps being used in web app, remove after
     # (because publication_date is not the right term.)
-    _check_date_of_signature(am.publication_date) 
+    _check_date_of_signature(am.publication_date)
 
 
 def _load_am_list(am_list_filename: str) -> List[ArreteMinisteriel]:
@@ -152,20 +202,34 @@ def _load_enriched_am_list(enriched_output_folder: str) -> Dict[str, ArreteMinis
     }
 
 
-def check_ams(am_list_filename: str, enriched_output_folder: str) -> None:
-    am_list = _load_am_list(am_list_filename)
-    for am in tqdm(am_list, 'Checking AMs'):
-        _check_am(am)
-    all_ids = {am.id for am in am_list}
-    assert 'JORFTEXT000034429274_A' in all_ids
-    assert 'JORFTEXT000034429274_E' in all_ids
-    assert 'JORFTEXT000034429274_D' in all_ids
-    enriched_am = _load_enriched_am_list(enriched_output_folder)
+def _group_enriched_ams(enriched_ams: Dict[str, ArreteMinisteriel]) -> Dict[str, Dict[str, ArreteMinisteriel]]:
     id_to_versions: Dict[str, Dict[str, ArreteMinisteriel]] = {}
-    for version_name, am in tqdm(enriched_am.items(), 'Checking enriched AMs'):
-        _check_am(am)
+    for version_name, am in typed_tqdm(enriched_ams.items(), 'Checking enriched AMs'):
         if am.id not in id_to_versions:
             id_to_versions[am.id or ''] = {}
         id_to_versions[am.id or ''][version_name] = am
-    for am_versions in tqdm(id_to_versions.values(), 'Checking enriched AM groups'):
-        _check_enriched_am_group(am_versions)
+    return id_to_versions
+
+
+def _check_enriched_ams(all_ids: Set[str], enriched_output_folder: str) -> None:
+    enriched_ams = _load_enriched_am_list(enriched_output_folder)
+    id_to_versions = _group_enriched_ams(enriched_ams)
+    for am in typed_tqdm(enriched_ams.values(), 'Checking enriched AMs'):
+        _check_am(am)
+    assert not (all_ids - set(list(id_to_versions.keys())))
+    for am_id, am_versions in typed_tqdm(id_to_versions.items(), 'Checking enriched AM groups'):
+        try:
+            _check_enriched_am_group(am_versions)
+        except Exception:
+            print(am_id)
+            raise
+
+
+def check_ams(am_list_filename: str, enriched_output_folder: str) -> None:
+    am_list = _load_am_list(am_list_filename)
+    for am in typed_tqdm(am_list, 'Checking AMs'):
+        _check_am(am)
+    all_ids = {ensure_not_none(am.id) for am in am_list}
+    for reg in 'AED':
+        assert f'JORFTEXT000034429274_{reg}' in all_ids
+    _check_enriched_ams(all_ids, enriched_output_folder)

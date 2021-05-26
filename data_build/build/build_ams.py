@@ -6,12 +6,11 @@ import pandas as pd
 from envinorma.data import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
 from envinorma.parametrization.am_with_versions import AMVersions, apply_parametrization, enrich_am
-from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, write_json
+from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json
 from tqdm import tqdm
 
 from data_build.config import DATA_FETCHER, generate_parametric_descriptor
 from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER, UNIQUE_CLASSEMENTS_FILENAME
-
 
 _AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
 
@@ -73,17 +72,25 @@ def _write_unique_classements_csv(filename: str) -> None:
     final_csv.to_csv(filename)
 
 
-def generate_ams() -> None:
-    _write_unique_classements_csv(UNIQUE_CLASSEMENTS_FILENAME)
+def _remove_previously_enriched_ams() -> None:
+    for file_ in typed_tqdm(os.listdir(ENRICHED_OUTPUT_FOLDER), 'Removing previously enriched files'):
+        os.remove(os.path.join(ENRICHED_OUTPUT_FOLDER, file_))
+
+
+def _generate_enriched_ams(id_to_am: Dict[str, ArreteMinisteriel]) -> None:
     parametrizations = DATA_FETCHER.load_all_parametrizations()
     statuses = DATA_FETCHER.load_all_am_statuses()
+    for id_ in tqdm(_AM_ID_TO_METADATA, 'Enriching AM.'):
+        parametrization = parametrizations.get(id_) if statuses[id_] == AMStatus.VALIDATED else None
+        parametrization = parametrization or Parametrization([], [], [])
+        _generate_and_dump_enriched_ams(id_, id_to_am[id_], parametrization)
+
+
+def generate_ams() -> None:
+    _write_unique_classements_csv(UNIQUE_CLASSEMENTS_FILENAME)
     id_to_am = _safe_load_id_to_text()
     all_ams = [am.to_dict() for am_id, am in id_to_am.items() if am_id not in AM1510_IDS]
-    for id_ in tqdm(_AM_ID_TO_METADATA, 'Enriching AM.'):
-        if statuses[id_] == AMStatus.VALIDATED:
-            _generate_and_dump_enriched_ams(
-                id_, id_to_am[id_], parametrizations.get(id_) or Parametrization([], [], [])
-            )
-            if id_ in AM1510_IDS:
-                all_ams.extend(_load_1510_am_no_date())
+    _remove_previously_enriched_ams()
+    _generate_enriched_ams(id_to_am)
+    all_ams.extend(_load_1510_am_no_date())
     write_json(all_ams, AM_LIST_FILENAME, pretty=False)
