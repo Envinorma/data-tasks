@@ -1,9 +1,10 @@
-from datetime import date
-from envinorma.data import VersionDescriptor, UsedDateParameter
-import pytest
 import math
+from datetime import date
 
-from data_build.validate.check_am import _is_a_partition, _assert_is_partition_matrix
+import pytest
+from envinorma.data import DateParameterDescriptor, VersionDescriptor
+
+from data_build.validate.check_am import _assert_is_partition_matrix, _is_a_partition
 
 
 def test_is_partition():
@@ -17,21 +18,21 @@ def test_is_partition():
     assert not _is_a_partition([])
 
 
-def _simple_vd(aed_parameter: UsedDateParameter) -> VersionDescriptor:
-    return VersionDescriptor(True, [], aed_parameter, UsedDateParameter(False))
+def _simple_vd(aed_parameter: DateParameterDescriptor) -> VersionDescriptor:
+    return VersionDescriptor(True, [], aed_parameter, DateParameterDescriptor(False))
 
 
 def test_assert_is_partition_matrix():
     with pytest.raises(ValueError):
         _assert_is_partition_matrix([])
 
-    _assert_is_partition_matrix([_simple_vd(UsedDateParameter(False))])
+    _assert_is_partition_matrix([_simple_vd(DateParameterDescriptor(False))])
     dt = date(2020, 1, 1)
     _assert_is_partition_matrix(
         [
-            _simple_vd(UsedDateParameter(True, False)),
-            _simple_vd(UsedDateParameter(True, True, None, dt)),
-            _simple_vd(UsedDateParameter(True, True, dt, None)),
+            _simple_vd(DateParameterDescriptor(True, False)),
+            _simple_vd(DateParameterDescriptor(True, True, None, dt)),
+            _simple_vd(DateParameterDescriptor(True, True, dt, None)),
         ]
     )
 
@@ -39,9 +40,9 @@ def test_assert_is_partition_matrix():
     dt_ = date(2021, 1, 1)
     _assert_is_partition_matrix(
         [
-            _simple_vd(UsedDateParameter(True, False)),
-            _simple_vd(UsedDateParameter(True, True, None, dt)),
-            _simple_vd(UsedDateParameter(True, True, dt, dt_)),
-            _simple_vd(UsedDateParameter(True, True, dt_, None)),
+            _simple_vd(DateParameterDescriptor(True, False)),
+            _simple_vd(DateParameterDescriptor(True, True, None, dt)),
+            _simple_vd(DateParameterDescriptor(True, True, dt, dt_)),
+            _simple_vd(DateParameterDescriptor(True, True, dt_, None)),
         ]
     )

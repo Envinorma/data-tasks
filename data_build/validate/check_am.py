@@ -4,7 +4,7 @@ import os
 from datetime import date
 from typing import Dict, List, Optional, Set, Tuple
 
-from envinorma.data import VersionDescriptor, ArreteMinisteriel, StructuredText, UsedDateParameter
+from envinorma.data import ArreteMinisteriel, DateParameterDescriptor, StructuredText, VersionDescriptor
 from envinorma.data.text_elements import Table
 from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
@@ -80,26 +80,26 @@ def _is_date_partition(criteria: List[_DatePair]) -> bool:
 
 def _group_installation_date_by_aed_date(
     versions: List[VersionDescriptor],
-) -> Dict[UsedDateParameter, List[UsedDateParameter]]:
-    res: Dict[UsedDateParameter, List[UsedDateParameter]] = {}
+) -> Dict[DateParameterDescriptor, List[DateParameterDescriptor]]:
+    res: Dict[DateParameterDescriptor, List[DateParameterDescriptor]] = {}
     for app in versions:
-        if app.aed_date_parameter not in res:
-            res[app.aed_date_parameter] = []
-        res[app.aed_date_parameter].append(app.installation_date_parameter)
+        if app.aed_date not in res:
+            res[app.aed_date] = []
+        res[app.aed_date].append(app.installation_date)
     return res
 
 
-def _assert_is_partition(used_date_parameters: List[UsedDateParameter]) -> None:
+def _assert_is_partition(used_date_parameters: List[DateParameterDescriptor]) -> None:
     if len(used_date_parameters) == 1:
-        assert not used_date_parameters[0].parameter_is_used
+        assert not used_date_parameters[0].is_used
         return
     date_tuples: List[_DatePair] = []
     nb_parameter_is_not_known = 0
     for parameter in used_date_parameters:
-        if not parameter.applicable_when_value_is_known:
+        if not parameter.known_value:
             nb_parameter_is_not_known += 1
             continue
-        date_tuples.append((parameter.left_date, parameter.right_date))
+        date_tuples.append((parameter.left_value, parameter.right_value))
     if not _is_date_partition(date_tuples):
         raise ValueError(f'Expecting partition, this is not the case here {date_tuples}')
     if nb_parameter_is_not_known != 1:
@@ -116,22 +116,22 @@ def _assert_is_partition_matrix(versions: List[VersionDescriptor]) -> None:
 def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel]) -> None:
     if len(ams) == 1:
         am = list(ams.values())[0]
-        app = am.version
-        if app.aed_date_parameter.parameter_is_used or app.installation_date_parameter.parameter_is_used:
+        app = am.version_descriptor
+        if app.aed_date.is_used or app.installation_date.is_used:
             raise ValueError(
                 'Expecting aed date and installation date to not be used in this case. '
-                f'Got {app.aed_date_parameter.parameter_is_used} and {app.installation_date_parameter.parameter_is_used}.'
+                f'Got {app.aed_date.is_used} and {app.installation_date.is_used}.'
             )
         return
-    _assert_is_partition_matrix([ensure_not_none(am.version) for am in ams.values()])
+    _assert_is_partition_matrix([ensure_not_none(am.version_descriptor) for am in ams.values()])
 
 
 def _is_default(am: ArreteMinisteriel) -> bool:
-    version_descriptor = ensure_not_none(am.version)
+    version_descriptor = ensure_not_none(am.version_descriptor)
     return (
         version_descriptor.applicable
-        and not version_descriptor.aed_date_parameter.applicable_when_value_is_known
-        and not version_descriptor.installation_date_parameter.applicable_when_value_is_known
+        and not version_descriptor.aed_date.known_value
+        and not version_descriptor.installation_date.known_value
     )
 
 
