@@ -85,18 +85,18 @@ def _group_installation_date_by_aed_date(
     for app in versions:
         if app.aed_date not in res:
             res[app.aed_date] = []
-        res[app.aed_date].append(app.installation_date)
+        res[app.aed_date].append(app.date_de_mise_en_service)
     return res
 
 
 def _assert_is_partition(used_date_parameters: List[DateParameterDescriptor]) -> None:
     if len(used_date_parameters) == 1:
-        assert not used_date_parameters[0].is_used
+        assert not used_date_parameters[0].is_used_in_parametrization
         return
     date_tuples: List[_DatePair] = []
     nb_parameter_is_not_known = 0
     for parameter in used_date_parameters:
-        if not parameter.known_value:
+        if parameter.unknown_classement_date_version:
             nb_parameter_is_not_known += 1
             continue
         date_tuples.append((parameter.left_value, parameter.right_value))
@@ -117,10 +117,10 @@ def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel])
     if len(ams) == 1:
         am = list(ams.values())[0]
         app = am.version_descriptor
-        if app.aed_date.is_used or app.installation_date.is_used:
+        if app.aed_date.is_used_in_parametrization or app.date_de_mise_en_service.is_used_in_parametrization:
             raise ValueError(
                 'Expecting aed date and installation date to not be used in this case. '
-                f'Got {app.aed_date.is_used} and {app.installation_date.is_used}.'
+                f'Got {app.aed_date.is_used_in_parametrization} and {app.date_de_mise_en_service.is_used_in_parametrization}.'
             )
         return
     _assert_is_partition_matrix([ensure_not_none(am.version_descriptor) for am in ams.values()])
@@ -128,10 +128,10 @@ def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel])
 
 def _is_default(am: ArreteMinisteriel) -> bool:
     version_descriptor = ensure_not_none(am.version_descriptor)
-    return (
+    return bool(
         version_descriptor.applicable
-        and not version_descriptor.aed_date.known_value
-        and not version_descriptor.installation_date.known_value
+        and version_descriptor.aed_date.unknown_classement_date_version in {True, None}
+        and version_descriptor.date_de_mise_en_service.unknown_classement_date_version in {True, None}
     )
 
 
@@ -185,9 +185,6 @@ def _check_am(am: ArreteMinisteriel) -> None:
     _check_table_extraction(am)
     _check_non_none_fields(am)
     _check_date_of_signature(am.date_of_signature)
-    # Below date must be kept as long as publication_date keeps being used in web app, remove after
-    # (because publication_date is not the right term.)
-    _check_date_of_signature(am.publication_date)
 
 
 def _load_am_list(am_list_filename: str) -> List[ArreteMinisteriel]:

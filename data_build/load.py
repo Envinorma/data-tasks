@@ -24,7 +24,7 @@ def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
 
 def load_installations(dataset: Dataset) -> List[Installation]:
     filename = dataset_filename(dataset, 'installations')
-    dataframe = pandas.read_csv(filename, dtype='str', index_col='Unnamed: 0', na_values=None).fillna('')
+    dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
     return [
         _dataframe_record_to_installation(cast(Dict, record))
         for record in typed_tqdm(dataframe.to_dict(orient='records'), 'Loading installations', leave=False)
@@ -41,7 +41,7 @@ def _dataframe_record_to_classement(record: Dict[str, Any]) -> DetailedClassemen
 
 def load_classements(dataset: Dataset) -> List[DetailedClassement]:
     filename = dataset_filename(dataset, 'classements')
-    dataframe_with_nan = pandas.read_csv(filename, dtype='str', index_col='Unnamed: 0', na_values=None)
+    dataframe_with_nan = pandas.read_csv(filename, dtype='str', na_values=None)
     dataframe = dataframe_with_nan.where(pandas.notnull(dataframe_with_nan), None)
     dataframe['volume'] = dataframe.volume.apply(lambda x: x or '')
     return [
@@ -60,7 +60,6 @@ def _dataframe_record_to_ap(record: Dict[str, Any]) -> Document:
     record['url'] = record['georisques_id'] + '.pdf'
     record['type'] = DocumentType.AP.value
     record['date'] = record['date'] if isinstance(record['date'], str) else None
-    del record['Unnamed: 0']
     del record['installation_s3ic_id']
     del record['georisques_id']
     return Document.from_dict(record)

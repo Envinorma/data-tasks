@@ -64,8 +64,6 @@ def _row_to_classement(record: Dict[str, Any]) -> DetailedClassement:
 
 
 def check_classements_csv(filename: str) -> None:
-    dataframe = pandas.read_csv(
-        filename, dtype='str', index_col='Unnamed: 0', na_values=None, parse_dates=['date_autorisation']
-    ).fillna('')
+    dataframe = pandas.read_csv(filename, dtype='str', na_values=None, parse_dates=['date_autorisation']).fillna('')
     classements = [_row_to_classement(record) for record in dataframe.to_dict(orient='records')]
     _check_output(classements)

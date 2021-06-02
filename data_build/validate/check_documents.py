@@ -55,5 +55,5 @@ def _check_output(dataframe: pandas.DataFrame) -> None:
 
 
 def check_documents_csv(filename: str) -> None:
-    dataframe = pandas.read_csv(filename, dtype='str', index_col='Unnamed: 0', na_values=None).fillna('')
+    dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
     _check_output(dataframe)
