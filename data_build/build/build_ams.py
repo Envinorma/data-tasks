@@ -69,7 +69,7 @@ def _write_unique_classements_csv(filename: str) -> None:
                 tuples.append(tp)
     unique = pd.DataFrame(tuples, columns=keys).groupby(['rubrique', 'regime']).first()
     final_csv = unique.sort_values(by=['rubrique', 'regime']).reset_index()[keys]
-    final_csv.to_csv(filename)
+    final_csv.to_csv(filename, index=False)
 
 
 def _remove_previously_enriched_ams() -> None:

@@ -172,7 +172,6 @@ def _check_regimes(am: ArreteMinisteriel) -> None:
 
 
 def _check_non_none_fields(am: ArreteMinisteriel) -> None:
-    assert am.summary is not None
     assert am.legifrance_url is not None
     assert am.aida_url is not None
 

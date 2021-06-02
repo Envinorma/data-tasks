@@ -26,7 +26,7 @@ def dump_aps(dataset: Dataset) -> None:
     print(f'Found {len(aps)} AP for dataset {dataset}.')
     assert len(aps) >= 100, f'Expecting >= 100 aps, got {len(aps)}'
     dataframe = _build_aps_dataframe(aps)
-    dataframe.to_csv(dataset_filename(dataset, 'aps'))
+    dataframe.to_csv(dataset_filename(dataset, 'aps'), index=False)
 
 
 def dump_ap_datasets() -> None:

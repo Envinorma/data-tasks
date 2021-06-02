@@ -85,7 +85,7 @@ def _build_csv() -> pd.DataFrame:
 def build_classements_csv() -> None:
     classements = _build_csv()
     _check_classements(classements)
-    classements.to_csv(dataset_filename('all', 'classements'))
+    classements.to_csv(dataset_filename('all', 'classements'), index=False)
     print(f'classements dataset all has {classements.shape[0]} rows')
 
 
@@ -98,7 +98,7 @@ def _filter_and_dump(all_classements: pd.DataFrame, dataset: Dataset) -> None:
     filtered_df = all_classements[all_classements.s3ic_id.apply(lambda x: x in installation_ids)]
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 classements, got {nb_rows}'
-    filtered_df.to_csv(dataset_filename(dataset, 'classements'))
+    filtered_df.to_csv(dataset_filename(dataset, 'classements'), index=False)
     print(f'classements dataset {dataset} has {nb_rows} rows')
 
 

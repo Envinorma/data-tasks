@@ -16,6 +16,10 @@ def _load_A_E_installations() -> pd.DataFrame:
     installations_with_duplicated_ids = installations_with_D[
         installations_with_D['régime_etab_en_vigueur'].apply(lambda x: x in publishable_regimes)
     ]
+    regime_map = {'A': 'A', 'E': 'E', 'S': 'A', '2': 'A'}
+    installations_with_duplicated_ids['régime_etab_en_vigueur'] = installations_with_duplicated_ids[
+        'régime_etab_en_vigueur'
+    ].apply(lambda x: regime_map[x])
     return installations_with_duplicated_ids.groupby('code_s3ic').last().reset_index()
 
 
@@ -66,7 +70,7 @@ def _modify_and_keep_final_installations_cols(installations: pd.DataFrame) -> pd
     installations = installations.copy()
     installations['num_dep'] = installations.code_postal.apply(lambda x: (x or '')[:2])
     installations['last_inspection'] = installations.last_inspection.apply(
-        lambda x: date.fromisoformat(x) if not isinstance(x, float) else None
+        lambda x: date.fromisoformat(x) if isinstance(x, str) else None
     )
     installations['family'] = installations.family.apply(_map_family)
     installations['active'] = installations['active'].fillna('')  # type: ignore
@@ -96,7 +100,7 @@ def build_installations_csv() -> None:
     final_active_installations = final_installations[
         final_installations.active == ActivityStatus.EN_FONCTIONNEMENT.value
     ]
-    final_active_installations.to_csv(dataset_filename('all', 'installations'))
+    final_active_installations.to_csv(dataset_filename('all', 'installations'), index=False)
     print(f'Dumped {final_active_installations.shape[0]} active installations.')
 
 
@@ -118,7 +122,7 @@ def _filter_and_dump(all_installations: pd.DataFrame, dataset: Dataset) -> None:
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 installations, got {nb_rows}'
     print(f'Installation dataset {dataset} has {nb_rows} rows')
-    filtered_df.to_csv(dataset_filename(dataset, 'installations'))
+    filtered_df.to_csv(dataset_filename(dataset, 'installations'), index=False)
 
 
 def build_all_installations_datasets() -> None:
