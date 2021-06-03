@@ -25,7 +25,7 @@ def get_parametric_ams_folder(am_id: str) -> str:
 def generate_parametric_descriptor(version_descriptor: Tuple[str, ...]) -> str:
     if not version_descriptor:
         return 'no_date_version'
-    return '_AND_'.join(version_descriptor).replace(' ', '_')
+    return '_AND_'.join(sorted(version_descriptor)).replace(' ', '_')
 
 
 def create_folder_and_generate_parametric_filename(am_id: str, version_descriptor: Tuple[str, ...]) -> str:
