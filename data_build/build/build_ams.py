@@ -10,7 +10,7 @@ from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, w
 from tqdm import tqdm
 
 from data_build.config import DATA_FETCHER, generate_parametric_descriptor
-from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER, UNIQUE_CLASSEMENTS_FILENAME
+from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
 
 _AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
 
@@ -59,19 +59,6 @@ def _load_1510_am_no_date() -> List[Dict[str, Any]]:
     ]
 
 
-def _write_unique_classements_csv(filename: str) -> None:
-    tuples = []
-    keys = ['rubrique', 'regime', 'alinea']
-    for am in _AM_ID_TO_METADATA.values():
-        for cl in am.classements:
-            if cl.state == cl.state.ACTIVE:
-                tp = tuple([getattr(cl, key) if key != 'regime' else cl.regime.value for key in keys])
-                tuples.append(tp)
-    unique = pd.DataFrame(tuples, columns=keys).groupby(['rubrique', 'regime']).first()
-    final_csv = unique.sort_values(by=['rubrique', 'regime']).reset_index()[keys]
-    final_csv.to_csv(filename, index=False)
-
-
 def _remove_previously_enriched_ams() -> None:
     for file_ in typed_tqdm(os.listdir(ENRICHED_OUTPUT_FOLDER), 'Removing previously enriched files'):
         os.remove(os.path.join(ENRICHED_OUTPUT_FOLDER, file_))
@@ -87,7 +74,6 @@ def _generate_enriched_ams(id_to_am: Dict[str, ArreteMinisteriel]) -> None:
 
 
 def generate_ams() -> None:
-    _write_unique_classements_csv(UNIQUE_CLASSEMENTS_FILENAME)
     id_to_am = _safe_load_id_to_text()
     all_ams = [am.to_dict() for am_id, am in id_to_am.items() if am_id not in AM1510_IDS]
     _remove_previously_enriched_ams()

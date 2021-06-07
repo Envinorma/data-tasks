@@ -9,7 +9,7 @@ from data_build.load import load_installation_ids
 from data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
 
 
-def _load_unique_classements() -> pd.DataFrame:
+def _load_deduplicated_classements() -> pd.DataFrame:
     all_rubriques = pd.read_csv(DGPR_RUBRIQUES_FILENAME, sep=';', dtype='str')
     return all_rubriques.drop_duplicates()
 
@@ -75,8 +75,8 @@ def _filter_47xx(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 
 def _build_csv() -> pd.DataFrame:
-    unique_classements = _load_unique_classements()
-    classements_in = _keep_classements_having_installation(unique_classements, load_installation_ids())
+    deduplicated_classements = _load_deduplicated_classements()
+    classements_in = _keep_classements_having_installation(deduplicated_classements, load_installation_ids())
     classements_with_renamed_columns = _rename_classements_columns(classements_in)
     final_classements = _modify_and_keep_final_classements_cols(classements_with_renamed_columns)
     return _filter_47xx(final_classements)
