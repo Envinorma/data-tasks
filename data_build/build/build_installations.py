@@ -1,11 +1,11 @@
 from datetime import date
-from envinorma.data import Regime
+from envinorma.models import Regime
 from typing import Any, Dict, cast
 
 import pandas as pd
 from tqdm import tqdm
 
-from envinorma.data.installation import ActivityStatus, Installation, InstallationFamily, Seveso
+from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from data_build.filenames import DGPR_INSTALLATIONS_FILENAME, Dataset, dataset_filename
 
 

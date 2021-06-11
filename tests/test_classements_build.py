@@ -3,7 +3,7 @@ from datetime import date
 
 import pandas
 import pytest
-from envinorma.data.classement import DetailedClassement, DetailedRegime, State
+from envinorma.models import DetailedClassement, DetailedClassementState, DetailedRegime
 
 from data_build.build.build_classements import _check_classements
 from data_build.validate.check_classements import _check_classement_is_safe, _is_4xxx, _is_47xx
@@ -77,7 +77,7 @@ def test_check_classement_is_safe():
             regime=DetailedRegime.A,
             alinea='1.',
             date_autorisation=date.today(),
-            state=State.EN_FONCTIONNEMENT,
+            state=DetailedClassementState.EN_FONCTIONNEMENT,
             regime_acte=DetailedRegime.A,
             alinea_acte='',
             rubrique_acte='3019',
@@ -95,7 +95,7 @@ def test_check_classement_is_safe():
                 regime=DetailedRegime.A,
                 alinea='1.',
                 date_autorisation=date.today(),
-                state=State.EN_FONCTIONNEMENT,
+                state=DetailedClassementState.EN_FONCTIONNEMENT,
                 regime_acte=DetailedRegime.A,
                 alinea_acte='',
                 rubrique_acte='3019',
@@ -115,7 +115,7 @@ def test_build_dataframe():
                 regime=DetailedRegime.A,
                 alinea='1.',
                 date_autorisation=date.today(),
-                state=State.EN_FONCTIONNEMENT,
+                state=DetailedClassementState.EN_FONCTIONNEMENT,
                 regime_acte=DetailedRegime.A,
                 alinea_acte='',
                 rubrique_acte='3019',

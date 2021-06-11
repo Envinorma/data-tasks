@@ -3,7 +3,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Iterable, List, Optional, TypeVar
 
 import requests
-from envinorma.data import AMMetadata
+from envinorma.models import AMMetadata
 from leginorma import LegifranceText
 from leginorma.api import LegifranceRequestError
 from tabulate import tabulate

@@ -3,11 +3,11 @@ Download last versions of AM and send them to envinorma-web
 '''
 
 from data_build.build.build_ams import generate_ams
-from data_build.build.build_aps import dump_ap_datasets, dump_aps
-from data_build.build.build_classements import build_all_classement_datasets, build_classements_csv
-from data_build.build.build_documents import build_all_document_datasets, download_georisques_documents
-from data_build.build.build_georisques_ids import dump_georisques_ids
-from data_build.build.build_installations import build_all_installations_datasets, build_installations_csv
+from data_build.build.build_aps import dump_ap_datasets, dump_aps  # noqa: F401
+from data_build.build.build_classements import build_all_classement_datasets, build_classements_csv  # noqa: F401
+from data_build.build.build_documents import build_all_document_datasets, download_georisques_documents  # noqa: F401
+from data_build.build.build_georisques_ids import dump_georisques_ids  # noqa: F401
+from data_build.build.build_installations import build_all_installations_datasets, build_installations_csv  # noqa: F401
 from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER, dataset_filename
 from data_build.validate.check_am import check_ams
 from data_build.validate.check_classements import check_classements_csv

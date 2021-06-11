@@ -2,8 +2,7 @@ import json
 import os
 from typing import Any, Dict, List, Optional, Set
 
-import pandas as pd
-from envinorma.data import AMMetadata, ArreteMinisteriel
+from envinorma.models import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
 from envinorma.parametrization.am_with_versions import AMVersions, apply_parametrization, enrich_am
 from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json

@@ -3,9 +3,9 @@ Group EVA industrie AMs.
 '''
 import json
 import os
-from typing import Any, Dict, List
+from typing import Dict, List
 
-from envinorma.data import ArreteMinisteriel
+from envinorma.models import ArreteMinisteriel
 from envinorma.utils import write_json
 
 from data_build.config import SEED_FOLDER

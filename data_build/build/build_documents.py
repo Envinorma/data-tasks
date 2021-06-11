@@ -5,7 +5,7 @@ from typing import Dict, List
 import requests
 from tqdm import tqdm
 
-from envinorma.data.document import Document
+from envinorma.models.document import Document
 from data_build.load import load_documents, load_installation_ids
 from data_build.filenames import GEORISQUES_URL, Dataset, dataset_filename
 from envinorma.utils import batch, typed_tqdm, write_json

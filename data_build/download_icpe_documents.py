@@ -6,7 +6,7 @@ import random
 from typing import List
 from urllib.request import HTTPError, urlretrieve  # type: ignore
 
-from envinorma.data.document import Document, DocumentType
+from envinorma.models.document import Document, DocumentType
 from tqdm import tqdm
 
 from data_build.build.build_documents import load_documents

@@ -6,8 +6,8 @@ import random
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from envinorma.data import AMSource, ArreteMinisteriel, extract_text_lines
-from envinorma.structure.am_structure_extraction import transform_arrete_ministeriel
+from envinorma.from_legifrance import legifrance_to_am
+from envinorma.models import AMSource, ArreteMinisteriel
 from leginorma import LegifranceClient
 from leginorma.models import LegifranceText
 from text_diff import AddedLine, ModifiedLine, RemovedLine, TextDifferences, UnchangedLine, text_differences
@@ -20,7 +20,7 @@ def _load_legifrance_version(am_id: str) -> ArreteMinisteriel:
     client = LegifranceClient(LEGIFRANCE_CLIENT_ID, LEGIFRANCE_CLIENT_SECRET)
     legifrance_current_version = LegifranceText.from_dict(client.consult_law_decree(am_id))
     random.seed(legifrance_current_version.title)
-    return transform_arrete_ministeriel(legifrance_current_version, am_id=am_id)
+    return legifrance_to_am(legifrance_current_version, am_id=am_id)
 
 
 def _clean_line(line: str) -> str:
@@ -32,7 +32,7 @@ def _remove_empty(lines: List[str]) -> List[str]:
 
 
 def _extract_lines(am: ArreteMinisteriel) -> List[str]:
-    return _remove_empty([_clean_line(line) for section in am.sections for line in extract_text_lines(section, 0)])
+    return _remove_empty([_clean_line(line) for section in am.sections for line in section.text_lines(0)])
 
 
 def _compute_am_diff(am_before: ArreteMinisteriel, am_after: ArreteMinisteriel) -> TextDifferences:

@@ -2,8 +2,8 @@ from datetime import date
 from typing import Any, Dict, cast
 
 import pandas
-from envinorma.data import Regime
-from envinorma.data.installation import ActivityStatus, Installation, InstallationFamily, Seveso
+from envinorma.models import Regime
+from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tqdm import tqdm
 
 
