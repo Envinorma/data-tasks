@@ -34,16 +34,14 @@ def _extract_all_tables(sections: List[StructuredText]) -> List[Table]:
 
 def _check_table_extraction(am: ArreteMinisteriel) -> None:
     tables = _extract_all_tables(am.sections)
-    str_rows = [row.text_in_inspection_sheet for table in tables for row in table.rows if not row.is_header]
+    str_rows = [row.inline_content for table in tables for row in table.rows if not row.is_header]
     nb_none = len([x for x in str_rows if x is None])
     nb_rows = len(str_rows)
     if nb_none:
-        raise ValueError(f'text_in_inspection_sheet must all be not None, found {nb_none}/{nb_rows} None')
+        raise ValueError(f'inline_content must all be not None, found {nb_none}/{nb_rows} None')
     nb_empty_str_rows = len([x for x in str_rows if not x])
     if nb_empty_str_rows / (nb_rows or 1) >= 0.95:
-        raise ValueError(
-            f'More than 95% of text_in_inspection_sheet are empty, found {nb_empty_str_rows}/{nb_rows} empty'
-        )
+        raise ValueError(f'More than 95% of inline_content are empty, found {nb_empty_str_rows}/{nb_rows} empty')
 
 
 _Segment = Tuple[float, float]
