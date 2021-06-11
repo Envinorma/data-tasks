@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from envinorma.models import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
-from envinorma.parametrization.am_with_versions import AMVersions, apply_parametrization, enrich_am
+from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions, enrich_am
 from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json
 from tqdm import tqdm
 
@@ -22,9 +22,9 @@ def _dump_am_versions(am_id: str, versions: AMVersions) -> None:
 
 
 def _generate_and_dump_enriched_ams(id_: str, am: ArreteMinisteriel, parametrization: Parametrization) -> None:
-    versions = apply_parametrization(id_, am, parametrization, _AM_ID_TO_METADATA[id_])
-    if versions:
-        _dump_am_versions(id_, versions)
+    versions = generate_am_with_versions(am, parametrization, _AM_ID_TO_METADATA[id_])
+    if versions.am_versions:
+        _dump_am_versions(id_, versions.am_versions)
 
 
 def _load_id_to_text(ids: Set[str]) -> Dict[str, ArreteMinisteriel]:
