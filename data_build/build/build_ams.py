@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Optional, Set
 
 from envinorma.models import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
-from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions, enrich_am
+from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions
+from envinorma.enriching import enrich
 from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json
 from tqdm import tqdm
 
@@ -38,7 +39,7 @@ def _load_id_to_text(ids: Set[str]) -> Dict[str, ArreteMinisteriel]:
 
 def _safe_enrich(am: Optional[ArreteMinisteriel], md: AMMetadata) -> ArreteMinisteriel:
     try:
-        return ensure_not_none(enrich_am(ensure_not_none(am), md))
+        return enrich(ensure_not_none(am), md)
     except Exception:
         print(md.cid)
         raise
