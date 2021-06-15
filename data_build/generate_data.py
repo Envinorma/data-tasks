@@ -2,7 +2,8 @@
 Download last versions of AM and send them to envinorma-web
 '''
 
-from data_build.build.build_ams import generate_ams
+from data_build.build.build_am_repository import generate_am_repository  # noqa: F401
+from data_build.build.build_ams import generate_ams  # noqa: F401
 from data_build.build.build_aps import dump_ap_datasets, dump_aps  # noqa: F401
 from data_build.build.build_classements import build_all_classement_datasets, build_classements_csv  # noqa: F401
 from data_build.build.build_documents import build_all_document_datasets, download_georisques_documents  # noqa: F401
@@ -24,6 +25,7 @@ def _check_seeds() -> None:
 
 def run():
     generate_ams()
+    # generate_am_repository()
     # build_installations_csv()
     # build_all_installations_datasets()
     # build_classements_csv()
