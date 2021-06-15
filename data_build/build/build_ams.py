@@ -45,7 +45,7 @@ def _safe_enrich(am: Optional[ArreteMinisteriel], md: AMMetadata) -> ArreteMinis
         raise
 
 
-def _safe_load_id_to_text() -> Dict[str, ArreteMinisteriel]:
+def safe_load_id_to_text() -> Dict[str, ArreteMinisteriel]:
     id_to_text = _load_id_to_text(set(list(_AM_ID_TO_METADATA.keys())))
     return {
         id_: _safe_enrich(id_to_text.get(id_), md) for id_, md in tqdm(_AM_ID_TO_METADATA.items(), 'Building AM list.')
@@ -74,7 +74,7 @@ def _generate_enriched_ams(id_to_am: Dict[str, ArreteMinisteriel]) -> None:
 
 
 def generate_ams() -> None:
-    id_to_am = _safe_load_id_to_text()
+    id_to_am = safe_load_id_to_text()
     all_ams = [am.to_dict() for am_id, am in id_to_am.items() if am_id not in AM1510_IDS]
     _remove_previously_enriched_ams()
     _generate_enriched_ams(id_to_am)
