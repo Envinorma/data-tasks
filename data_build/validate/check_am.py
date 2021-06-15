@@ -4,8 +4,8 @@ import os
 from datetime import date
 from typing import Dict, List, Optional, Set, Tuple
 
-from envinorma.data import ArreteMinisteriel, DateParameterDescriptor, StructuredText, VersionDescriptor
-from envinorma.data.text_elements import Table
+from envinorma.models import ArreteMinisteriel, DateParameterDescriptor, StructuredText, VersionDescriptor
+from envinorma.models.text_elements import Table
 from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
 
@@ -34,16 +34,14 @@ def _extract_all_tables(sections: List[StructuredText]) -> List[Table]:
 
 def _check_table_extraction(am: ArreteMinisteriel) -> None:
     tables = _extract_all_tables(am.sections)
-    str_rows = [row.text_in_inspection_sheet for table in tables for row in table.rows if not row.is_header]
+    str_rows = [row.inline_content for table in tables for row in table.rows if not row.is_header]
     nb_none = len([x for x in str_rows if x is None])
     nb_rows = len(str_rows)
     if nb_none:
-        raise ValueError(f'text_in_inspection_sheet must all be not None, found {nb_none}/{nb_rows} None')
+        raise ValueError(f'inline_content must all be not None, found {nb_none}/{nb_rows} None')
     nb_empty_str_rows = len([x for x in str_rows if not x])
     if nb_empty_str_rows / (nb_rows or 1) >= 0.95:
-        raise ValueError(
-            f'More than 95% of text_in_inspection_sheet are empty, found {nb_empty_str_rows}/{nb_rows} empty'
-        )
+        raise ValueError(f'More than 95% of inline_content are empty, found {nb_empty_str_rows}/{nb_rows} empty')
 
 
 _Segment = Tuple[float, float]
@@ -57,8 +55,8 @@ def _is_a_partition(segments: List[_Segment]) -> bool:
         return False
     if segments[-1][1] != math.inf:
         return False
-    for (_, l), (r, _) in zip(segments, segments[1:]):
-        if l != r:
+    for (_, right), (left, _) in zip(segments, segments[1:]):
+        if right != left:
             return False
     return True
 
@@ -120,7 +118,8 @@ def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel])
         if app.aed_date.is_used_in_parametrization or app.date_de_mise_en_service.is_used_in_parametrization:
             raise ValueError(
                 'Expecting aed date and installation date to not be used in this case. '
-                f'Got {app.aed_date.is_used_in_parametrization} and {app.date_de_mise_en_service.is_used_in_parametrization}.'
+                f'Got {app.aed_date.is_used_in_parametrization} and'
+                f' {app.date_de_mise_en_service.is_used_in_parametrization}.'
             )
         return
     _assert_is_partition_matrix([ensure_not_none(am.version_descriptor) for am in ams.values()])
@@ -128,11 +127,10 @@ def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel])
 
 def _is_default(am: ArreteMinisteriel) -> bool:
     version_descriptor = ensure_not_none(am.version_descriptor)
-    return bool(
-        version_descriptor.applicable
-        and version_descriptor.aed_date.unknown_classement_date_version in {True, None}
-        and version_descriptor.date_de_mise_en_service.unknown_classement_date_version in {True, None}
-    )
+    bool_1 = version_descriptor.applicable
+    bool_2 = version_descriptor.aed_date.unknown_classement_date_version in {True, None}
+    bool_3 = version_descriptor.date_de_mise_en_service.unknown_classement_date_version in {True, None}
+    return bool(bool_1 and bool_2 and bool_3)
 
 
 def _check_exactly_one_non_enriched_am(ams: Dict[str, ArreteMinisteriel]) -> None:
@@ -153,7 +151,7 @@ def _print_input_id(func):
     def _func(am: ArreteMinisteriel):
         try:
             func(am)
-        except:
+        except:  # noqa: E722
             print(am.id)
             raise
 

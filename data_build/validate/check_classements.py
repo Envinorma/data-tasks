@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 import pandas
-from envinorma.data.classement import DetailedClassement, DetailedRegime
+from envinorma.models import DetailedClassement, DetailedRegime
 
 
 def _is_47xx(rubrique: Optional[str]) -> bool:

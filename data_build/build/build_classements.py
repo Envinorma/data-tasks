@@ -1,10 +1,10 @@
 from datetime import date
-from typing import Any, List, Set, cast
+from typing import Any, Set, cast
 
 import pandas as pd
 from tqdm import tqdm
 
-from envinorma.data.classement import DetailedClassement, DetailedRegime, State
+from envinorma.models import DetailedClassement, DetailedRegime, DetailedClassementState
 from data_build.load import load_installation_ids
 from data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
 
@@ -49,7 +49,7 @@ def _modify_and_keep_final_classements_cols(classements: pd.DataFrame) -> pd.Dat
         classements[key] = classements[key].apply(lambda x: date.fromisoformat(x) if not isinstance(x, float) else None)
     classements['regime'] = classements['regime'].apply(_simplify_regime)
     classements['regime_acte'] = classements['regime_acte'].apply(_simplify_regime)
-    active_classements = classements[classements.state == State.EN_FONCTIONNEMENT.value]
+    active_classements = classements[classements.state == DetailedClassementState.EN_FONCTIONNEMENT.value]
     return cast(pd.DataFrame, active_classements)
 
 

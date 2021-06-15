@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pandas
 
-from envinorma.data.document import Document, DocumentType
+from envinorma.models.document import Document, DocumentType
 from data_build.load import load_documents
 from data_build.filenames import Dataset, dataset_filename
 

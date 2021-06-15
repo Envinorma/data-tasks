@@ -3,8 +3,9 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from envinorma.data import Nomenclature, Regime, RubriqueSimpleThresholds
-from envinorma.data.installation import Seveso
+from envinorma.models import Regime
+from envinorma.models.installation import Seveso
+from envinorma.models.nomenclature import Nomenclature, RubriqueSimpleThresholds
 from envinorma.utils import snake_to_camel
 
 

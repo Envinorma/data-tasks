@@ -3,10 +3,9 @@ from datetime import date
 from typing import Any, Dict, List, Set, cast
 
 import pandas
-from envinorma.data import Regime
-from envinorma.data.classement import DetailedClassement
-from envinorma.data.document import Document, DocumentType
-from envinorma.data.installation import ActivityStatus, Installation, InstallationFamily, Seveso
+from envinorma.models import DetailedClassement, Regime
+from envinorma.models.document import Document, DocumentType
+from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 
 from data_build.build.build_installations import load_installations_csv
 from data_build.filenames import Dataset, dataset_filename

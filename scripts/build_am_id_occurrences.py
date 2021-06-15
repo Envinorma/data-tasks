@@ -1,4 +1,4 @@
-'''Build file data/am_id_to_nb_classements.json containing the number of occurrences 
+'''Build file data/am_id_to_nb_classements.json containing the number of occurrences
 of each AM among all active installations.
 '''
 
