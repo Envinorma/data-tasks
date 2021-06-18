@@ -5,7 +5,7 @@ test-and-lint:
 	venv/bin/isort . --profile black -l 120
 
 generate-am:
-	python3 data_build/generate_data.py 
+	python3 -m tasks.data_build.generate_data
 
 download-backup:
 	sh scripts/download_backup.sh

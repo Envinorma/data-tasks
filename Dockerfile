@@ -4,9 +4,13 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+RUN mkdir /data
+RUN mkdir /data/seed
+RUN mkdir /data/repo
+
+RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
 COPY . .
 
-CMD [ "python", "./am_diffs/compute_am_diffs.py" ]
-# CMD [ "python", "./backup_bo_database.py" ]
-# CMD [ "python", "./data_build/load_ams_in_ovh.py" ]
+CMD [ "python", "-m", "tasks.flows" ]
+

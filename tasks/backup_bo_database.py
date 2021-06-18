@@ -1,8 +1,15 @@
-import subprocess
-import tempfile
-from datetime import datetime
+def _set_environment_variables() -> None:
+    # To keep above OVH import to ensure env vars are set correctly
+    from .common.config import PSQL_DSN  # noqa: F401
 
-from .common.ovh_upload import BucketName, init_swift_service, upload_document
+
+_set_environment_variables()
+
+import subprocess  # noqa: E402
+import tempfile  # noqa: E402
+from datetime import datetime  # noqa: E402
+
+from .common.ovh_upload import BucketName, init_swift_service, upload_document  # noqa: E402
 
 _AM_BUCKET: BucketName = 'am'
 
@@ -12,6 +19,7 @@ class DatabaseBackupError(Exception):
 
 
 def _capture_backup() -> None:
+    print('Capturing backup')
     completed_process = subprocess.run(
         ['heroku', 'pg:backups:capture', '--app', 'envinorma-back-office'], capture_output=True, text=True
     )
@@ -20,6 +28,7 @@ def _capture_backup() -> None:
 
 
 def _download_backup_from_heroku(filename: str) -> None:
+    print('Downloading backup')
     completed_process = subprocess.run(
         ['heroku', 'pg:backups:download', '--app', 'envinorma-back-office', '--output', filename],
         capture_output=True,
@@ -30,11 +39,12 @@ def _download_backup_from_heroku(filename: str) -> None:
 
 
 def _upload_backup_to_ovh(local_filename: str, remote_filename: str) -> None:
+    print('Uploading backup')
     upload_document(_AM_BUCKET, init_swift_service(), local_filename, remote_filename)
 
 
 def _backup_remote_filename() -> str:
-    return f'{datetime.now().isoformat()}.dump'
+    return f'backup/{datetime.now().isoformat()}.dump'
 
 
 def backup_bo_database() -> None:

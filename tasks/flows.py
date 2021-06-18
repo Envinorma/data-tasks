@@ -1,11 +1,18 @@
-from prefect import Flow, task
-from prefect.agent.local import LocalAgent
-from prefect.executors import LocalExecutor
-from prefect.schedules import CronSchedule
+def _set_environment_variables() -> None:
+    # To keep above OVH import to ensure env vars are set correctly
+    from .common.config import PSQL_DSN  # noqa: F401
 
-from .am_diffs.compute_am_diffs import compute_and_dispatch_diff
-from .backup_bo_database import backup_bo_database
-from .data_build.load_ams_in_ovh import load_ams_in_ovh
+
+_set_environment_variables()
+
+from prefect import Flow, task  # noqa: E402
+from prefect.agent.local import LocalAgent  # noqa: E402
+from prefect.executors import LocalExecutor  # noqa: E402
+from prefect.schedules import CronSchedule  # noqa: E402
+
+from .am_diffs.compute_am_diffs import compute_and_dispatch_diff  # noqa: E402
+from .backup_bo_database import backup_bo_database  # noqa: E402
+from .data_build.load_ams_in_ovh import load_ams_in_ovh  # noqa: E402
 
 
 @task
