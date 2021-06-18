@@ -48,9 +48,7 @@ def _safe_enrich(am: Optional[ArreteMinisteriel], md: AMMetadata) -> ArreteMinis
 def safe_load_id_to_text() -> Dict[str, ArreteMinisteriel]:
     id_to_text = _load_id_to_text(set(list(_AM_ID_TO_METADATA.keys())))
     return {
-        id_: _safe_enrich(id_to_text.get(id_), md)
-        for id_, md in tqdm(_AM_ID_TO_METADATA.items(), 'Building AM list.')
-        if 'JORFTEXT000034429274' in id_  # TODO: remove restriction
+        id_: _safe_enrich(id_to_text.get(id_), md) for id_, md in tqdm(_AM_ID_TO_METADATA.items(), 'Building AM list.')
     }
 
 
@@ -70,8 +68,6 @@ def _generate_enriched_ams(id_to_am: Dict[str, ArreteMinisteriel]) -> None:
     parametrizations = DATA_FETCHER.load_all_parametrizations()
     statuses = DATA_FETCHER.load_all_am_statuses()
     for id_ in tqdm(_AM_ID_TO_METADATA, 'Enriching AM.'):
-        if 'JORFTEXT000034429274' not in id_:
-            continue  # TODO: remove restriction
         parametrization = parametrizations.get(id_) if statuses[id_] == AMStatus.VALIDATED else None
         parametrization = parametrization or Parametrization([], [], [])
         _generate_and_dump_enriched_ams(id_, id_to_am[id_], parametrization)
