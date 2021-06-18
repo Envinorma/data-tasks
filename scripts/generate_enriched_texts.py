@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions
 from envinorma.utils import write_json
 
-from data_build.config import DATA_FETCHER
+from tasks.data_build.config import DATA_FETCHER
 
 TEST_ID = 'JORFTEXT000023081678'
 

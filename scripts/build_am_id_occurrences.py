@@ -5,8 +5,8 @@ of each AM among all active installations.
 from collections import Counter
 from typing import Dict, List
 
-from data_build.config import DATA_FETCHER
-from data_build.load import load_classements
+from tasks.data_build.config import DATA_FETCHER
+from tasks.data_build.load import load_classements
 
 
 def _load_classement_to_am() -> Dict[str, List[str]]:

@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from envinorma.models import DateParameterDescriptor, VersionDescriptor
 
-from data_build.validate.check_am import _assert_is_partition_matrix, _is_a_partition
+from tasks.data_build.validate.check_am import _assert_is_partition_matrix, _is_a_partition
 
 
 def test_is_partition():

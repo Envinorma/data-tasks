@@ -5,14 +5,15 @@ import re
 import shutil
 import tempfile
 import traceback
-from functools import lru_cache
 from typing import Dict, Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
 from ocrmypdf import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
-from swiftclient.service import SwiftService, SwiftUploadObject
+from swiftclient.service import SwiftService
 from tqdm import tqdm
+
+from tasks.common.ovh_upload import BucketName, init_swift_service, upload_document
 
 T = TypeVar('T')
 
@@ -31,42 +32,11 @@ def _data_filename() -> str:
 
 
 GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-durable.gouv.fr/commun'
-BucketName = Literal['ap']
 configure_logging(Verbosity.quiet)
 
 
 def _load_all_georisques_ids() -> List[str]:
     return json.load(open(_data_filename()))
-
-
-def _check_upload(results: List[Dict]) -> None:
-    for result in results:
-        if not result.get('success'):
-            raise ValueError(f'Failed Uploading document. Response:\n{result}')
-
-
-def _upload_document(bucket_name: BucketName, service: SwiftService, source: str, destination: str) -> None:
-    remote = SwiftUploadObject(source, object_name=destination)
-    result = list(service.upload(bucket_name, [remote]))
-    _check_upload(result)
-
-
-def _check_auth(service: SwiftService) -> None:
-    services = list(service.list())
-    if len(services) != 1:
-        return
-    error = services[0].get('error')
-    traceback = services[0].get('traceback')
-    if error:
-        raise ValueError(f'Probable error in authentication: {error}\n{traceback}')
-    print('Service successfully started.')
-
-
-@lru_cache
-def _get_service() -> SwiftService:
-    service = SwiftService()
-    _check_auth(service)
-    return service
 
 
 def download_document(url: str, output_filename: str) -> None:
@@ -91,7 +61,7 @@ def _ocr(input_filename: str, output_filename: str) -> None:
 
 
 def _upload_to_ovh(filename: str, destination: str) -> None:
-    _upload_document('ap', _get_service(), filename, destination)
+    upload_document('ap', init_swift_service(), filename, destination)
 
 
 def _ovh_filename(georisques_id: str) -> str:
@@ -121,8 +91,8 @@ def _file_exists(filename: str, bucket_name: BucketName, service: SwiftService) 
 
 
 def _file_already_processed(georisques_id: str) -> bool:
-    ocred_file_exists = _file_exists(_ovh_filename(georisques_id), 'ap', _get_service())
-    error_file_exists = _file_exists(_ovh_error_filename(georisques_id), 'ap', _get_service())
+    ocred_file_exists = _file_exists(_ovh_filename(georisques_id), 'ap', init_swift_service())
+    error_file_exists = _file_exists(_ovh_error_filename(georisques_id), 'ap', init_swift_service())
     return ocred_file_exists or error_file_exists
 
 
@@ -132,7 +102,7 @@ def _get_bucket_object_names(bucket: BucketName, service: SwiftService) -> List[
 
 
 def _get_uploaded_ap_files() -> List[str]:
-    return _get_bucket_object_names('ap', _get_service())
+    return _get_bucket_object_names('ap', init_swift_service())
 
 
 def _compute_advancement() -> None:

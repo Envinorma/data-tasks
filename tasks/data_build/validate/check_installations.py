@@ -6,6 +6,8 @@ from envinorma.models import Regime
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tqdm import tqdm
 
+from ..filenames import dataset_filename
+
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
     record['last_inspection'] = date.fromisoformat(record['last_inspection']) if record['last_inspection'] else None
@@ -16,7 +18,7 @@ def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
     return Installation(**record)
 
 
-def check_installations_csv(filename: str) -> None:
+def check_installations_csv(filename: str = dataset_filename('all', 'installations')) -> None:
     dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
     for record in tqdm(dataframe.to_dict(orient='records'), 'Checking installations csv'):
         _dataframe_record_to_installation(cast(Dict, record))

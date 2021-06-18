@@ -7,9 +7,9 @@ from envinorma.models import DetailedClassement, Regime
 from envinorma.models.document import Document, DocumentType
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 
-from data_build.build.build_installations import load_installations_csv
-from data_build.filenames import Dataset, dataset_filename
-from data_build.utils import typed_tqdm
+from tasks.data_build.build.build_installations import load_installations_csv
+from tasks.data_build.filenames import Dataset, dataset_filename
+from tasks.data_build.utils import typed_tqdm
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:

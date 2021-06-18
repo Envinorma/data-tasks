@@ -3,15 +3,15 @@ Generate AM open data repository
 cf https://github.com/Envinorma/arretes-ministeriels
 '''
 from envinorma.models.arrete_ministeriel import ArreteMinisteriel
-from data_build.build.build_ams import safe_load_id_to_text
+from tasks.data_build.build.build_ams import safe_load_id_to_text
 import json
 import os
 from typing import Any, Dict, List, Union
 from envinorma.parametrization import Parametrization
 from envinorma.utils import typed_tqdm
 
-from data_build.config import DATA_FETCHER, AM_REPOSITORY_FOLDER
-from data_build.filenames import ENRICHED_OUTPUT_FOLDER
+from tasks.data_build.config import DATA_FETCHER, AM_REPOSITORY_FOLDER
+from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
 
 _METADATA_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'metadata')
 _BASE_AMS_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'base_ams')

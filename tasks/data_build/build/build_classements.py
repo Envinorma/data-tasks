@@ -5,8 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from envinorma.models import DetailedClassement, DetailedRegime, DetailedClassementState
-from data_build.load import load_installation_ids
-from data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
+from tasks.data_build.load import load_installation_ids
+from tasks.data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
 
 
 def _load_deduplicated_classements() -> pd.DataFrame:

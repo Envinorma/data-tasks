@@ -3,8 +3,8 @@ from typing import Any, Dict, List
 import pandas
 
 from envinorma.models.document import Document, DocumentType
-from data_build.load import load_documents
-from data_build.filenames import Dataset, dataset_filename
+from tasks.data_build.load import load_documents
+from tasks.data_build.filenames import Dataset, dataset_filename
 
 
 def _rowify_ap(ap: Document) -> Dict[str, Any]:

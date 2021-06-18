@@ -1,7 +1,7 @@
 import os
 from typing import Literal
 
-from data_build.config import SECRET_DATA_FOLDER, SEED_FOLDER
+from tasks.data_build.config import SECRET_DATA_FOLDER, SEED_FOLDER
 
 ENRICHED_OUTPUT_FOLDER = os.path.join(SEED_FOLDER, 'enriched_arretes')
 AM_LIST_FILENAME = os.path.join(SEED_FOLDER, 'am_list.json')
