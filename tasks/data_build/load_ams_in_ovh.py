@@ -2,13 +2,13 @@ import shutil
 import tempfile
 from datetime import datetime
 
-from ..common.ovh_upload import init_swift_service, upload_document
+from ..common.ovh_upload import BucketName, init_swift_service, upload_document
 from .build.build_am_repository import generate_am_repository
 from .build.build_ams import generate_ams
 from .config import AM_REPOSITORY_FOLDER
 from .validate.check_am import check_ams
 
-_AM_BUCKET = 'am'
+_AM_BUCKET: BucketName = 'am'
 
 
 def _upload_to_ovh(local_filename: str, remote_filename: str) -> None:

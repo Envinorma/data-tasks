@@ -2,9 +2,9 @@ import subprocess
 import tempfile
 from datetime import datetime
 
-from .common.ovh_upload import init_swift_service, upload_document
+from .common.ovh_upload import BucketName, init_swift_service, upload_document
 
-_AM_BUCKET = 'am'
+_AM_BUCKET: BucketName = 'am'
 
 
 class DatabaseBackupError(Exception):

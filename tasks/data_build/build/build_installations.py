@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
-from data_build.filenames import DGPR_INSTALLATIONS_FILENAME, Dataset, dataset_filename
+from tasks.data_build.filenames import DGPR_INSTALLATIONS_FILENAME, Dataset, dataset_filename
 
 
 def _load_A_E_installations() -> pd.DataFrame:

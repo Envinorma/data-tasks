@@ -13,7 +13,7 @@ from ocrmypdf.exceptions import PriorOcrFoundError
 from swiftclient.service import SwiftService
 from tqdm import tqdm
 
-from ..common.ovh_upload import BucketName, init_swift_service, upload_document
+from tasks.common.ovh_upload import BucketName, init_swift_service, upload_document
 
 T = TypeVar('T')
 

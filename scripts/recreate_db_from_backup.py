@@ -8,7 +8,7 @@ from datetime import datetime
 
 import psycopg2
 
-from data_build.config import DATABASE_NAME, PSQL_DSN
+from tasks.data_build.config import DATABASE_NAME, PSQL_DSN
 
 _CONNECTION = psycopg2.connect(PSQL_DSN)
 

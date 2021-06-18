@@ -9,8 +9,8 @@ from urllib.request import HTTPError, urlretrieve  # type: ignore
 from envinorma.models.document import Document, DocumentType
 from tqdm import tqdm
 
-from data_build.build.build_documents import load_documents
-from data_build.filenames import CQUEST_URL, DOCUMENTS_FOLDER, GEORISQUES_DOWNLOAD_URL
+from tasks.data_build.build.build_documents import load_documents
+from tasks.data_build.filenames import CQUEST_URL, DOCUMENTS_FOLDER, GEORISQUES_DOWNLOAD_URL
 
 _BAR_FORMAT = '{l_bar}{r_bar}'
 

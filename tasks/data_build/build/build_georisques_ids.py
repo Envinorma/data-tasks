@@ -1,7 +1,7 @@
 import json
 
 from envinorma.models.document import DocumentType
-from data_build.load import load_aps
+from tasks.data_build.load import load_aps
 
 
 def dump_georisques_ids(filename: str) -> None:

@@ -10,7 +10,7 @@ from tabulate import tabulate
 from text_diff import TextDifferences, text_differences
 from tqdm import tqdm
 
-from am_diffs.config import AM_SLACK_URL, DATA_FETCHER, get_legifrance_client
+from tasks.am_diffs.config import AM_SLACK_URL, DATA_FETCHER, get_legifrance_client
 
 T = TypeVar('T')
 

@@ -9,8 +9,8 @@ from envinorma.enriching import enrich
 from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json
 from tqdm import tqdm
 
-from data_build.config import DATA_FETCHER, generate_parametric_descriptor
-from data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
+from tasks.data_build.config import DATA_FETCHER, generate_parametric_descriptor
+from tasks.data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
 
 _AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
 

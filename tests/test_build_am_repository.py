@@ -1,4 +1,4 @@
-from data_build.build.build_am_repository import _group_by_key
+from tasks.data_build.build.build_am_repository import _group_by_key
 
 
 def test_group_by_key():
