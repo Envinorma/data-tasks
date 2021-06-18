@@ -1,5 +1,5 @@
 def _set_environment_variables() -> None:
-    # To keep above OVH import to ensure env vars are set correctly
+    # To keep above prefect import to ensure env vars are set correctly
     from .common.config import PSQL_DSN  # noqa: F401
 
 
