@@ -3,7 +3,7 @@ from functools import lru_cache
 from envinorma.data_fetcher import DataFetcher
 from leginorma import LegifranceClient
 
-from shared_config import get_config_variable
+from ..common.config import get_config_variable
 
 LEGIFRANCE_CLIENT_SECRET = get_config_variable('legifrance', 'client_secret')
 LEGIFRANCE_CLIENT_ID = get_config_variable('legifrance', 'client_id')

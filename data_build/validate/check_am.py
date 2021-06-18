@@ -8,6 +8,8 @@ from envinorma.models import ArreteMinisteriel, DateParameterDescriptor, Structu
 from envinorma.models.text_elements import Table
 from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
+from ..filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
+
 
 def _extract_all_references(sections: List[StructuredText]) -> List[Optional[str]]:
     return [section.reference_str for section in sections] + [
@@ -219,11 +221,11 @@ def _check_enriched_ams(all_ids: Set[str], enriched_output_folder: str) -> None:
             raise
 
 
-def check_ams(am_list_filename: str, enriched_output_folder: str) -> None:
-    am_list = _load_am_list(am_list_filename)
+def check_ams() -> None:
+    am_list = _load_am_list(AM_LIST_FILENAME)
     for am in typed_tqdm(am_list, 'Checking AMs'):
         _check_am(am)
     all_ids = {ensure_not_none(am.id) for am in am_list}
     for reg in 'AED':
         assert f'JORFTEXT000034429274_{reg}' in all_ids
-    _check_enriched_ams(all_ids, enriched_output_folder)
+    _check_enriched_ams(all_ids, ENRICHED_OUTPUT_FOLDER)

@@ -5,6 +5,8 @@ from typing import Any, Dict, List
 import pandas
 from tqdm import tqdm
 
+from ..filenames import dataset_filename
+
 _DIGITS = set('0123456789')
 
 
@@ -54,6 +56,6 @@ def _check_output(dataframe: pandas.DataFrame) -> None:
         _check_record(record)
 
 
-def check_documents_csv(filename: str) -> None:
+def check_documents_csv(filename: str = dataset_filename('all', 'aps')) -> None:
     dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
     _check_output(dataframe)
