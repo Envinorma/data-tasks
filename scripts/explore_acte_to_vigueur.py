@@ -1,12 +1,12 @@
 """Exploration of the transformation of the classements from classements actes to classements en vigueur
 """
 
+from collections import Counter, defaultdict
 from typing import Callable, Dict, List, Optional, Tuple
-from envinorma.models.classement import Classement
 
 from envinorma.models.installation_classement import DetailedClassement, DetailedRegime
+
 from tasks.data_build.load import load_classements
-from collections import defaultdict, Counter
 
 _ClassementTuple = Tuple[Optional[str], Optional[DetailedRegime], Optional[str]]
 _ClassementCounter = Dict[_ClassementTuple, int]

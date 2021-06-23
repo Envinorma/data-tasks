@@ -1,12 +1,17 @@
 import json
+import logging
 from datetime import date
-from typing import Any, Dict, List, Set, cast
+from typing import Any, Dict, List, Optional, Set, cast
 
 import pandas
 from envinorma.models import DetailedClassement, Regime
+from envinorma.models.am_metadata import AMMetadata
+from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.models.document import Document, DocumentType
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
+from envinorma.utils import ensure_not_none
 
+from tasks.common.config import DATA_FETCHER
 from tasks.data_build.build.build_installations import load_installations_csv
 from tasks.data_build.filenames import Dataset, dataset_filename
 from tasks.data_build.utils import typed_tqdm
@@ -70,3 +75,25 @@ def load_aps(dataset: Dataset) -> List[Document]:
         _dataframe_record_to_ap(record)
         for record in typed_tqdm(dataframe.to_dict(orient='records'), 'Loading aps', leave=False)
     ]
+
+
+def load_am_metadata() -> Dict[str, AMMetadata]:
+    return {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
+
+
+def load_ams(ids: Optional[Set[str]] = None) -> Dict[str, ArreteMinisteriel]:
+    """Load all ams or specify a set of am ids to load.
+
+    Args:
+        ids (Optional[Set[str]], optional): Set of ids to load. Defaults to None.
+
+    Returns:
+        Dict[str, ArreteMinisteriel]: Dict mapping am_id to the corresponding AM.
+    """
+    logging.info('loading AM.')
+    ids = ids or set(list(load_am_metadata().keys()))
+    structured_texts = DATA_FETCHER.load_structured_ams(ids)
+    id_to_structured_text = {text.id or '': text for text in structured_texts}
+    initial_texts = DATA_FETCHER.load_initial_ams(ids)
+    id_to_initial_text = {text.id or '': text for text in initial_texts}
+    return {id_: ensure_not_none(id_to_structured_text.get(id_) or id_to_initial_text.get(id_)) for id_ in ids}

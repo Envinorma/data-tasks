@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from envinorma.models import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from tasks.data_build.config import DATA_FETCHER, generate_parametric_descriptor
 from tasks.data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
+from tasks.data_build.load import load_ams
 
 _AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
 
@@ -28,15 +29,6 @@ def _generate_and_dump_enriched_ams(id_: str, am: ArreteMinisteriel, parametriza
         _dump_am_versions(id_, versions.am_versions)
 
 
-def _load_id_to_text(ids: Set[str]) -> Dict[str, ArreteMinisteriel]:
-    print('loading texts.')
-    structured_texts = DATA_FETCHER.load_structured_ams(ids)
-    id_to_structured_text = {text.id or '': text for text in structured_texts}
-    initial_texts = DATA_FETCHER.load_initial_ams(ids)
-    id_to_initial_text = {text.id or '': text for text in initial_texts}
-    return {id_: ensure_not_none(id_to_structured_text.get(id_) or id_to_initial_text.get(id_)) for id_ in ids}
-
-
 def _safe_enrich(am: Optional[ArreteMinisteriel], md: AMMetadata) -> ArreteMinisteriel:
     try:
         return enrich(ensure_not_none(am), md)
@@ -46,7 +38,7 @@ def _safe_enrich(am: Optional[ArreteMinisteriel], md: AMMetadata) -> ArreteMinis
 
 
 def safe_load_id_to_text() -> Dict[str, ArreteMinisteriel]:
-    id_to_text = _load_id_to_text(set(list(_AM_ID_TO_METADATA.keys())))
+    id_to_text = load_ams(set(list(_AM_ID_TO_METADATA.keys())))
     return {
         id_: _safe_enrich(id_to_text.get(id_), md) for id_, md in tqdm(_AM_ID_TO_METADATA.items(), 'Building AM list.')
     }
