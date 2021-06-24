@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.models.structured_text import Annotations, StructuredText
-from envinorma.topics.patterns import TopicName, merge_patterns, normalize, tokenize
+from envinorma.topics.patterns import TopicName, merge_patterns, normalize
 from envinorma.utils import typed_tqdm, write_json
 
 # from tasks.data_build.load import load_ams
@@ -17,7 +17,7 @@ from tasks.data_build.validate.check_am import check_ams
 
 _Section = Union[StructuredText, ArreteMinisteriel]
 
-_ONTOLOGY = {
+_ONTOLOGY_RAW = {
     TopicName.DISPOSITIONS_GENERALES: ['dispositions générales'],
     TopicName.IMPLANTATION_AMENAGEMENT: ['implantation'],
     TopicName.EXPLOITATION: ['exploitation entretien'],
@@ -28,6 +28,8 @@ _ONTOLOGY = {
     TopicName.BRUIT_VIBRATIONS: ['bruit', 'vibrations'],
     TopicName.FIN_EXPLOITATION: ['remise en état'],
 }
+
+_ONTOLOGY = {topic: merge_patterns(list(map(normalize, patterns))) for topic, patterns in _ONTOLOGY_RAW.items()}
 
 
 def _match(section_title: str) -> bool:
@@ -42,20 +44,11 @@ def _detect_matching_depth(section: _Section) -> Optional[int]:
     return None if not child_matching_depths else 1 + min(child_matching_depths)
 
 
-def _prepare(text: str) -> List[str]:
-    return tokenize(normalize(text))
-
-
-def _submatch(candidate: List[str], target: str) -> bool:
-    return len(list(re.finditer(merge_patterns(candidate), target))) != 0
-
-
 def _detect(text: str) -> Optional[TopicName]:
     prepared_text = normalize(text)
     for topic, patterns in _ONTOLOGY.items():
-        for pattern in patterns:
-            if _submatch(_prepare(pattern), prepared_text):
-                return topic
+        if list(re.finditer(patterns, prepared_text)):
+            return topic
     return None
 
 
