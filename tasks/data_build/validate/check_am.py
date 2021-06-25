@@ -2,13 +2,13 @@ import json
 import math
 import os
 from datetime import date
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from envinorma.models import ArreteMinisteriel, DateParameterDescriptor, StructuredText, VersionDescriptor
 from envinorma.models.text_elements import Table
 from envinorma.utils import AM1510_IDS, ensure_not_none, typed_tqdm
 
-from ..filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
+from ..filenames import ENRICHED_OUTPUT_FOLDER
 
 
 def _extract_all_references(sections: List[StructuredText]) -> List[Optional[str]]:
@@ -187,10 +187,6 @@ def _check_am(am: ArreteMinisteriel) -> None:
     _check_date_of_signature(am.date_of_signature)
 
 
-def _load_am_list(am_list_filename: str) -> List[ArreteMinisteriel]:
-    return [ArreteMinisteriel.from_dict(x) for x in json.load(open(am_list_filename))]
-
-
 def _load_enriched_am_list(enriched_output_folder: str) -> Dict[str, ArreteMinisteriel]:
     return {
         file_: ArreteMinisteriel.from_dict(json.load(open(os.path.join(enriched_output_folder, file_))))
@@ -200,19 +196,14 @@ def _load_enriched_am_list(enriched_output_folder: str) -> Dict[str, ArreteMinis
 
 def _group_enriched_ams(enriched_ams: Dict[str, ArreteMinisteriel]) -> Dict[str, Dict[str, ArreteMinisteriel]]:
     id_to_versions: Dict[str, Dict[str, ArreteMinisteriel]] = {}
-    for version_name, am in typed_tqdm(enriched_ams.items(), 'Checking enriched AMs'):
+    for version_name, am in typed_tqdm(enriched_ams.items(), 'Grouping enriched AMs'):
         if am.id not in id_to_versions:
             id_to_versions[am.id or ''] = {}
         id_to_versions[am.id or ''][version_name] = am
     return id_to_versions
 
 
-def _check_enriched_ams(all_ids: Set[str], enriched_output_folder: str) -> None:
-    enriched_ams = _load_enriched_am_list(enriched_output_folder)
-    id_to_versions = _group_enriched_ams(enriched_ams)
-    for am in typed_tqdm(enriched_ams.values(), 'Checking enriched AMs'):
-        _check_am(am)
-    assert not (all_ids - set(list(id_to_versions.keys())))
+def _check_enriched_am_groups(id_to_versions: Dict[str, Dict[str, ArreteMinisteriel]]) -> None:
     for am_id, am_versions in typed_tqdm(id_to_versions.items(), 'Checking enriched AM groups'):
         try:
             _check_enriched_am_group(am_versions)
@@ -222,10 +213,10 @@ def _check_enriched_ams(all_ids: Set[str], enriched_output_folder: str) -> None:
 
 
 def check_ams() -> None:
-    am_list = _load_am_list(AM_LIST_FILENAME)
-    for am in typed_tqdm(am_list, 'Checking AMs'):
+    enriched_ams = _load_enriched_am_list(ENRICHED_OUTPUT_FOLDER)
+    for am in typed_tqdm(enriched_ams.values(), 'Checking enriched AMs'):
         _check_am(am)
-    all_ids = {ensure_not_none(am.id) for am in am_list}
+    id_to_versions = _group_enriched_ams(enriched_ams)
     for reg in 'AED':
-        assert f'JORFTEXT000034429274_{reg}' in all_ids
-    _check_enriched_ams(all_ids, ENRICHED_OUTPUT_FOLDER)
+        assert f'JORFTEXT000034429274_{reg}' in id_to_versions
+    _check_enriched_am_groups(id_to_versions)

@@ -6,11 +6,11 @@ from envinorma.models import AMMetadata, ArreteMinisteriel
 from envinorma.parametrization import Parametrization
 from envinorma.parametrization.am_with_versions import AMVersions, generate_am_with_versions
 from envinorma.enriching import enrich
-from envinorma.utils import AM1510_IDS, AMStatus, ensure_not_none, typed_tqdm, write_json
+from envinorma.utils import AMStatus, ensure_not_none, typed_tqdm, write_json
 from tqdm import tqdm
 
 from tasks.data_build.config import DATA_FETCHER, generate_parametric_descriptor
-from tasks.data_build.filenames import AM_LIST_FILENAME, ENRICHED_OUTPUT_FOLDER
+from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
 from tasks.data_build.load import load_ams
 
 _AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
@@ -73,8 +73,5 @@ def _create_if_inexistent(folder: str):
 def generate_ams() -> None:
     _create_if_inexistent(ENRICHED_OUTPUT_FOLDER)
     id_to_am = safe_load_id_to_text()
-    all_ams = [am.to_dict() for am_id, am in id_to_am.items() if am_id not in AM1510_IDS]
     _remove_previously_enriched_ams()
     _generate_enriched_ams(id_to_am)
-    all_ams.extend(_load_1510_am_no_date())
-    write_json(all_ams, AM_LIST_FILENAME, pretty=False)

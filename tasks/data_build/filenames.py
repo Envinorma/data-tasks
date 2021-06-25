@@ -4,7 +4,6 @@ from typing import Literal
 from tasks.data_build.config import SECRET_DATA_FOLDER, SEED_FOLDER
 
 ENRICHED_OUTPUT_FOLDER = os.path.join(SEED_FOLDER, 'enriched_arretes')
-AM_LIST_FILENAME = os.path.join(SEED_FOLDER, 'am_list.json')
 Dataset = Literal['all', 'idf', 'sample']
 DataType = Literal['classements', 'installations', 'documents', 'aps']
 Extension = Literal['csv', 'json']
