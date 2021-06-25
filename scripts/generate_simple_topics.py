@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.models.structured_text import Annotations, StructuredText
 from envinorma.topics.patterns import TopicName, merge_patterns, normalize
-from envinorma.utils import typed_tqdm, write_json
+from envinorma.utils import ensure_not_none, typed_tqdm, write_json
 
 # from tasks.data_build.load import load_ams
 from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
@@ -76,7 +76,7 @@ def _extract_topic_mapping(section: _Section, matching_depth: int, current_depth
     if matching_depth == current_depth:
         if not isinstance(section, StructuredText):
             return []
-        return [(section.title.text, section.annotations.topic)]
+        return [(section.title.text, ensure_not_none(section.annotations).topic)]
     return [elt for sec in section.sections for elt in _extract_topic_mapping(sec, matching_depth, current_depth + 1)]
 
 

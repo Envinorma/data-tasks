@@ -116,7 +116,7 @@ def _assert_is_partition_matrix(versions: List[VersionDescriptor]) -> None:
 def _check_non_overlapping_installation_dates(ams: Dict[str, ArreteMinisteriel]) -> None:
     if len(ams) == 1:
         am = list(ams.values())[0]
-        app = am.version_descriptor
+        app = ensure_not_none(am.version_descriptor)
         if app.aed_date.is_used_in_parametrization or app.date_de_mise_en_service.is_used_in_parametrization:
             raise ValueError(
                 'Expecting aed date and installation date to not be used in this case. '
