@@ -8,10 +8,10 @@ from datetime import datetime
 
 import psycopg2
 
+from tasks.common.config import DATA_FETCHER
 from tasks.data_build.config import DATABASE_NAME
 
-_PSQL_DSN = ''
-_CONNECTION = psycopg2.connect(_PSQL_DSN)
+_CONNECTION = psycopg2.connect(DATA_FETCHER.psql_dsn)
 
 
 def _drop_tables():
@@ -44,7 +44,7 @@ _BACKUP_FOLDER = pathlib.Path('.').parent / 'backups'
 
 
 def run():
-    if '0.0.0.0:5432' not in _PSQL_DSN:
+    if '0.0.0.0:5432' not in DATA_FETCHER.psql_dsn:
         raise ValueError('Cannot drop remote tables.')
     _drop_tables()
     filename = _get_most_recent_backup_filename(str(_BACKUP_FOLDER))
