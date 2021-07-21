@@ -5,7 +5,7 @@ import pandas
 import pytest
 from envinorma.models import DetailedClassement, DetailedClassementState, DetailedRegime
 
-from tasks.data_build.build.build_classements import _check_classements
+from tasks.data_build.build.from_s3ic.classements import _check_classements
 from tasks.data_build.validate.check_classements import _check_classement_is_safe, _is_4xxx, _is_47xx
 
 

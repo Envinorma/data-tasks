@@ -1,3 +1,4 @@
+import pandas as pd
 import json
 import logging
 from datetime import date
@@ -12,9 +13,16 @@ from envinorma.models.installation import ActivityStatus, Installation, Installa
 from envinorma.utils import ensure_not_none
 
 from tasks.common.config import DATA_FETCHER
-from tasks.data_build.build.build_installations import load_installations_csv
 from tasks.data_build.filenames import Dataset, dataset_filename
 from tasks.data_build.utils import typed_tqdm
+
+
+def load_installations_csv(dataset: Dataset) -> pd.DataFrame:
+    return pd.read_csv(dataset_filename(dataset, 'installations'), dtype='str')
+
+
+def load_documents_csv(dataset: Dataset) -> pd.DataFrame:
+    return pd.read_csv(dataset_filename(dataset, 'documents'), dtype='str')
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
@@ -54,8 +62,11 @@ def load_classements(dataset: Dataset) -> List[DetailedClassement]:
     ]
 
 
-def load_documents(dataset: Dataset) -> List[Document]:
-    return [Document.from_dict(doc) for doc in json.load(open(dataset_filename(dataset, 'documents', 'json')))]
+def load_documents_from_csv(dataset: Dataset) -> List[Document]:
+    return [
+        Document.from_dict(doc)
+        for doc in pd.read_csv(dataset_filename(dataset, 'documents'), dtype='str').fillna('').to_dict(orient='records')
+    ]
 
 
 def _dataframe_record_to_ap(record: Dict[str, Any]) -> Document:

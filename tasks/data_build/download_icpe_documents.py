@@ -9,8 +9,8 @@ from urllib.request import HTTPError, urlretrieve  # type: ignore
 from envinorma.models.document import Document, DocumentType
 from tqdm import tqdm
 
-from tasks.data_build.build.build_documents import load_documents
 from tasks.data_build.filenames import CQUEST_URL, DOCUMENTS_FOLDER, GEORISQUES_DOWNLOAD_URL
+from tasks.data_build.load import load_documents_from_csv
 
 _BAR_FORMAT = '{l_bar}{r_bar}'
 
@@ -43,5 +43,5 @@ def _download_documents(documents: List[Document]) -> None:
 
 
 if __name__ == '__main__':
-    ALL_DOCS = [doc for doc in load_documents('all') if doc.type == DocumentType.AP]
+    ALL_DOCS = [doc for doc in load_documents_from_csv('all') if doc.type == DocumentType.AP]
     _download_documents(random.sample(ALL_DOCS, 100))
