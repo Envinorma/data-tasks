@@ -1,10 +1,13 @@
+import argparse
 import json
 import pathlib
 import random
 import re
 import shutil
 import tempfile
+import time
 import traceback
+from datetime import datetime
 from typing import Dict, Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
@@ -105,13 +108,57 @@ def _get_uploaded_ap_files() -> List[str]:
     return _get_bucket_object_names('ap', init_swift_service())
 
 
-def _compute_advancement() -> None:
+def _get_tasks_statuses_counter() -> Dict[str, int]:
     ids_with_statuses = _fetch_already_processed_ids_with_statuses()
     error_ids = {id_ for id_, status in ids_with_statuses if status == 'error'}
     success_ids = {id_ for id_, status in ids_with_statuses if status == 'success'}
     all_ids = set(_load_all_georisques_ids())
-    print(f'Advancement: {len(error_ids | success_ids)}/{len(all_ids)}')
-    print(f'Nb errors: {len(error_ids)}')
+    return {
+        'success': len(success_ids - (success_ids - all_ids)),
+        'error': len(error_ids - (error_ids - all_ids)),
+        'total': len(all_ids),
+    }
+
+
+def _eta_to_days_hours_minutes(eta: float) -> Tuple[int, int, int]:
+    minutes = (eta // 60) % 60
+    hours = (eta // 3600) % 24
+    days = eta // 86400
+    return int(days), int(hours), int(minutes)
+
+
+def _print_advancement(datetimes: List[datetime], status_counters: List[Dict[str, int]]) -> None:
+    current_datetime = datetimes[-1]
+    current_counter = status_counters[-1]
+    total_nb_tasks = current_counter['total']
+    current_nb_computed_tasks = current_counter['success'] + current_counter['error']
+    remaining_nb_tasks = total_nb_tasks - current_nb_computed_tasks
+    print('ETA estimations:')
+    for datetime_, status_counter in zip(datetimes[-4:-1], status_counters[-4:-1]):
+        elapsed_time = (current_datetime - datetime_).total_seconds()
+        nb_computed_tasks = status_counter['success'] + status_counter['error']
+        nb_computed_tasks_during_this_time = current_nb_computed_tasks - nb_computed_tasks
+        eta = (elapsed_time / nb_computed_tasks_during_this_time) * remaining_nb_tasks
+        days, hours, minutes = _eta_to_days_hours_minutes(eta)
+        print(
+            f'Computed: {nb_computed_tasks_during_this_time}/{total_nb_tasks}, Remaining: '
+            f'{days}d {hours}h {minutes}m',
+        )
+
+
+def _run_compute_advancement() -> None:
+    all_statuses: List[Dict[str, int]] = []
+    datetimes: List[datetime] = []
+    sleep_times = [30, 60, 5 * 60]
+    epoch = 0
+    while True:
+        statuses = _get_tasks_statuses_counter()
+        all_statuses.append(statuses)
+        datetimes.append(datetime.now())
+        _print_advancement(datetimes, all_statuses)
+        sleep_time = sleep_times[epoch] if epoch < len(sleep_times) else sleep_times[-1]
+        epoch += 1
+        time.sleep(sleep_time)
 
 
 _GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}\.')
@@ -156,7 +203,7 @@ def _load_remaining_ids() -> List[str]:
     return list(ids_to_process - already_processed_ids)
 
 
-def run() -> None:
+def _run_ocr() -> None:
     ids = _load_remaining_ids()
     random.shuffle(ids)
 
@@ -171,6 +218,17 @@ def run() -> None:
             print(f'Error when processing {id_}:\n{error}')
 
 
+def run() -> None:
+    parser = argparse.ArgumentParser(description='Run the OCR pipeline')
+    parser.add_argument(
+        '--compute-advancement', action='store_true', help='Run computation of advancement', required=False
+    )
+    args = parser.parse_args()
+    if args.compute_advancement:
+        _run_compute_advancement()
+    else:
+        _run_ocr()
+
+
 if __name__ == '__main__':
     run()
-    # _compute_advancement()
