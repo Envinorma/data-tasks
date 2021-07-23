@@ -114,7 +114,7 @@ def _compute_advancement() -> None:
     print(f'Nb errors: {len(error_ids)}')
 
 
-_GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}')
+_GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}\.')
 
 _OCRStatus = Literal['error', 'success']
 
@@ -130,7 +130,11 @@ def _extract_status(file_extension: str) -> _OCRStatus:
 def _extract_id_and_status(filename: str) -> Tuple[str, _OCRStatus]:
     assert re.match(_GEORISQUES_ID_REGEXP, filename), f'filename {filename} does not contain id.'
     georisques_id, *extension = filename.split('.')
-    return georisques_id, _extract_status('.'.join(extension))
+    try:
+        return georisques_id, _extract_status('.'.join(extension))
+    except ValueError:
+        print(f'Filename: {filename}')
+        raise
 
 
 def _extract_ids_and_statuses(filenames: Set[str]) -> Set[Tuple[str, _OCRStatus]]:
