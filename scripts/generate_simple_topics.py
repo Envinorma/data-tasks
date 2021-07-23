@@ -1,13 +1,13 @@
 """Generate very simple topics for AMs. -- One shot script."""
 import json
 import os
-from tasks.common.config import DATA_FETCHER
 from typing import Dict
 
 from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.topics.simple_topics import add_simple_topics
 from envinorma.utils import typed_tqdm, write_json
 
+from tasks.common.config import DATA_FETCHER
 from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
 from tasks.data_build.validate.check_am import check_ams
 
@@ -26,9 +26,9 @@ def _add_simple_topics():
 
 
 def _add_simple_topics_in_am_db():
-    am_metadata = DATA_FETCHER.load_all_am_metadata(True)
+    am_metadata = DATA_FETCHER.load_all_am_metadata(False)
     for am_md in typed_tqdm(am_metadata.values(), 'Adding topics to AM.'):
-        am = DATA_FETCHER.load_structured_am(am_md.cid)
+        am = DATA_FETCHER.load_most_advanced_am(am_md.cid)
         if not am:
             continue
         DATA_FETCHER.upsert_structured_am(am_md.cid, add_simple_topics(am))
