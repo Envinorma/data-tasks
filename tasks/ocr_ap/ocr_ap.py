@@ -132,7 +132,7 @@ def _print_advancement(datetimes: List[datetime], all_nb_computed_tasks: List[in
     for datetime_, nb_computed_tasks in zip(datetimes[-4:-1], all_nb_computed_tasks[-4:-1]):
         elapsed_time = (current_datetime - datetime_).total_seconds()
         nb_computed_tasks_during_this_time = current_nb_computed_tasks - nb_computed_tasks
-        eta = (elapsed_time / nb_computed_tasks_during_this_time) * remaining_nb_tasks
+        eta = (elapsed_time / (nb_computed_tasks_during_this_time or 1)) * remaining_nb_tasks
         days, hours, minutes = _eta_to_days_hours_minutes(eta)
         print(
             f'Computed: {nb_computed_tasks}/{total_nb_tasks}, Remaining: ' f'{days}d {hours}h {minutes}m',
