@@ -11,7 +11,7 @@ from ..filenames import dataset_filename
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
     record['last_inspection'] = date.fromisoformat(record['last_inspection']) if record['last_inspection'] else None
-    record['regime'] = Regime(record['regime'])
+    record['regime'] = Regime(record['regime']) if record['regime'] else None
     record['seveso'] = Seveso(record['seveso'])
     record['family'] = InstallationFamily(record['family'])
     record['active'] = ActivityStatus(record['active'])

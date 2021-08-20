@@ -6,7 +6,7 @@ import requests
 from tqdm import tqdm
 
 from envinorma.models.document import Document
-from tasks.data_build.load import load_documents, load_installation_ids
+from tasks.data_build.load import load_documents_from_csv, load_installation_ids
 from tasks.data_build.filenames import GEORISQUES_URL, Dataset, dataset_filename
 from envinorma.utils import batch, typed_tqdm, write_json
 
@@ -80,6 +80,6 @@ def _filter_and_dump(all_documents: List[Document], dataset: Dataset) -> None:
 
 
 def build_all_document_datasets() -> None:
-    all_documents = load_documents('all')
+    all_documents = load_documents_from_csv('all')
     _filter_and_dump(all_documents, 'sample')
     _filter_and_dump(all_documents, 'idf')
