@@ -45,9 +45,11 @@ def build_all_documents() -> None:
 def _filter_and_dump(all_documents: pd.DataFrame, dataset: Dataset) -> None:
     doc_ids = load_installation_ids(dataset)
     filtered_documents = all_documents[all_documents.s3ic_id.apply(lambda x: x in doc_ids)]
-    filtered_documents.to_csv(dataset_filename(dataset, 'documents'), index=False)
-    print(f'documents dataset {dataset} has {len(filtered_documents)} rows')
-    assert len(filtered_documents) >= 100, f'Expecting >= 100 docs, got {len(filtered_documents)}'
+    sort_keys = ['s3ic_id', 'date', 'url']
+    sorted_documents = filtered_documents.sort_values(by=sort_keys, ascending=[True, False, True])  # type: ignore
+    sorted_documents.to_csv(dataset_filename(dataset, 'documents'), index=False)
+    print(f'documents dataset {dataset} has {len(sorted_documents)} rows')
+    assert len(sorted_documents) >= 100, f'Expecting >= 100 docs, got {len(sorted_documents)}'
 
 
 def build_all_documents_datasets() -> None:
