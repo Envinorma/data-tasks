@@ -1,12 +1,9 @@
-from datetime import date
-from typing import Any, Set, cast
-
 import pandas as pd
 from tqdm import tqdm
 
-from envinorma.models import DetailedClassement, DetailedRegime, DetailedClassementState
+from envinorma.models import DetailedClassement, DetailedRegime
 from tasks.data_build.load import load_installation_ids
-from tasks.data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
+from tasks.data_build.filenames import Dataset, dataset_filename
 
 
 def _simplify_regime(regime: str) -> str:

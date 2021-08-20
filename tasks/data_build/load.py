@@ -1,10 +1,9 @@
-import pandas as pd
-import json
 import logging
 from datetime import date
 from typing import Any, Dict, List, Optional, Set, cast
 
 import pandas
+import pandas as pd
 from envinorma.models import DetailedClassement, Regime
 from envinorma.models.am_metadata import AMMetadata
 from envinorma.models.arrete_ministeriel import ArreteMinisteriel
