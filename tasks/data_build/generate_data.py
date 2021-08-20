@@ -1,6 +1,7 @@
 '''
 Download last versions of AM and send them to envinorma-web
 '''
+import argparse
 
 from typing_extensions import Literal
 
@@ -34,7 +35,7 @@ def _build_from_s3ic():
 
 
 def _check_installations_data():
-    # check_classements_csv()
+    check_classements_csv()
     check_installations_csv()
     check_documents_csv()
 
@@ -55,8 +56,8 @@ def _build_installations_data(source: _Source):
     # dump_georisques_ids(filename)
 
 
-def _handle_installations_data():
-    _build_installations_data('georisques')
+def _handle_installations_data(source: _Source):
+    _build_installations_data(source)
     _check_installations_data()
 
 
@@ -67,10 +68,27 @@ def _handle_ams(with_repository: bool) -> None:
     check_ams()
 
 
-def run():
-    # _handle_ams(False)
-    _handle_installations_data()
+def run(
+    source: _Source = 'georisques',
+    with_repository: bool = False,
+    handle_ams: bool = True,
+    handle_installations_data: bool = True,
+) -> None:
+    if handle_ams:
+        _handle_ams(with_repository)
+    if handle_installations_data:
+        _handle_installations_data(source)
+
+
+def cli():
+    parser = argparse.ArgumentParser(description='Build data for envinorma-web')
+    parser.add_argument('--source', type=str, default='georisques', help='Source of data (georisques or s3ic)')
+    parser.add_argument('--with-repository', action='store_true', help='Generate AM repository')
+    parser.add_argument('--handle-ams', action='store_true', help='Generate AMs')
+    parser.add_argument('--handle-installations-data', action='store_true', help='Generate installation data')
+    args = parser.parse_args()
+    run(args.source, args.with_repository, args.handle_ams, args.handle_installations_data)
 
 
 if __name__ == '__main__':
-    run()
+    cli()
