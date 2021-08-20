@@ -54,5 +54,6 @@ def _filter_and_dump(all_documents: pd.DataFrame, dataset: Dataset) -> None:
 
 def build_all_documents_datasets() -> None:
     all_documents = load_documents_csv('all')
+    _filter_and_dump(all_documents, 'all')
     _filter_and_dump(all_documents, 'sample')
     _filter_and_dump(all_documents, 'idf')

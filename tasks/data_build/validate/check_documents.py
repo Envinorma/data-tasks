@@ -1,11 +1,12 @@
 import re
 from datetime import date
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 import pandas
 from tqdm import tqdm
 
 from ..filenames import dataset_filename
+from ..load import load_installations_csv
 
 _DIGITS = set('0123456789')
 
@@ -43,19 +44,26 @@ def _check_installation_s3ic_id(s3ic_id: str) -> None:
         raise ValueError(f's3ic_id must have shape "xxxx.xxxxx", x being a digit. Got {s3ic_id}')
 
 
-def _check_record(record: Dict[str, Any]) -> None:
+def _check_installation_exists(s3ic_id, installations_ids: Set[str]) -> None:
+    assert s3ic_id in installations_ids, f'{s3ic_id} is found in installations dataset.'
+
+
+def _check_record(record: Dict[str, Any], installations_ids: Set[str]) -> None:
     _check_has_keys(record, ['installation_s3ic_id', 'description', 'date', 'georisques_id'])
     _check_date(record['date'])
     _check_installation_s3ic_id(record['installation_s3ic_id'])
     _check_description(record['description'])
     _check_georisques_id(record['georisques_id'])
+    _check_installation_exists(record['installation_s3ic_id'], installations_ids)
 
 
-def _check_output(dataframe: pandas.DataFrame) -> None:
+def _check_output(dataframe: pandas.DataFrame, installations_ids: Set[str]) -> None:
     for record in tqdm(dataframe.to_dict(orient='records'), 'Checking AP'):
-        _check_record(record)
+        _check_record(record, installations_ids)
 
 
-def check_documents_csv(filename: str = dataset_filename('all', 'aps')) -> None:
+def check_documents_csv() -> None:
+    filename: str = dataset_filename('all', 'aps')
+    installations_ids = set(load_installations_csv('all')['s3ic_id'].to_list())
     dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
-    _check_output(dataframe)
+    _check_output(dataframe, installations_ids)
