@@ -1,10 +1,13 @@
+import argparse
 import json
 import pathlib
 import random
 import re
 import shutil
 import tempfile
+import time
 import traceback
+from datetime import datetime
 from typing import Dict, Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
@@ -105,16 +108,54 @@ def _get_uploaded_ap_files() -> List[str]:
     return _get_bucket_object_names('ap', init_swift_service())
 
 
-def _compute_advancement() -> None:
+def _get_computed_nb_tasks() -> int:
     ids_with_statuses = _fetch_already_processed_ids_with_statuses()
     error_ids = {id_ for id_, status in ids_with_statuses if status == 'error'}
     success_ids = {id_ for id_, status in ids_with_statuses if status == 'success'}
     all_ids = set(_load_all_georisques_ids())
-    print(f'Advancement: {len(error_ids | success_ids)}/{len(all_ids)}')
-    print(f'Nb errors: {len(error_ids)}')
+    remaining = all_ids - success_ids - error_ids
+    return len(all_ids) - len(remaining)
 
 
-_GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}')
+def _eta_to_days_hours_minutes(eta: float) -> Tuple[int, int, int]:
+    minutes = (eta // 60) % 60
+    hours = (eta // 3600) % 24
+    days = eta // 86400
+    return int(days), int(hours), int(minutes)
+
+
+def _print_advancement(datetimes: List[datetime], all_nb_computed_tasks: List[int], total_nb_tasks: int) -> None:
+    current_datetime = datetimes[-1]
+    current_nb_computed_tasks = all_nb_computed_tasks[-1]
+    remaining_nb_tasks = total_nb_tasks - current_nb_computed_tasks
+    print(f'ETA estimations at {current_datetime}:')
+    for datetime_, nb_computed_tasks in zip(datetimes[-4:-1], all_nb_computed_tasks[-4:-1]):
+        elapsed_time = (current_datetime - datetime_).total_seconds()
+        nb_computed_tasks_during_this_time = current_nb_computed_tasks - nb_computed_tasks
+        eta = (elapsed_time / (nb_computed_tasks_during_this_time or 1)) * remaining_nb_tasks
+        days, hours, minutes = _eta_to_days_hours_minutes(eta)
+        print(
+            f'Computed: {nb_computed_tasks}/{total_nb_tasks}, Remaining: ' f'{days}d {hours}h {minutes}m',
+        )
+
+
+def _run_compute_advancement() -> None:
+    total_nb_tasks = len(set(_load_all_georisques_ids()))
+    all_computed_nb_tasks: List[int] = []
+    datetimes: List[datetime] = []
+    sleep_times = [30, 60, 5 * 60]
+    epoch = 0
+    while True:
+        all_computed_nb_tasks.append(_get_computed_nb_tasks())
+        datetimes.append(datetime.now())
+        if epoch > 0:
+            _print_advancement(datetimes, all_computed_nb_tasks, total_nb_tasks)
+        sleep_time = sleep_times[epoch] if epoch < len(sleep_times) else sleep_times[-1]
+        epoch += 1
+        time.sleep(sleep_time)
+
+
+_GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}\.')
 
 _OCRStatus = Literal['error', 'success']
 
@@ -130,7 +171,11 @@ def _extract_status(file_extension: str) -> _OCRStatus:
 def _extract_id_and_status(filename: str) -> Tuple[str, _OCRStatus]:
     assert re.match(_GEORISQUES_ID_REGEXP, filename), f'filename {filename} does not contain id.'
     georisques_id, *extension = filename.split('.')
-    return georisques_id, _extract_status('.'.join(extension))
+    try:
+        return georisques_id, _extract_status('.'.join(extension))
+    except ValueError:
+        print(f'Filename: {filename}')
+        raise
 
 
 def _extract_ids_and_statuses(filenames: Set[str]) -> Set[Tuple[str, _OCRStatus]]:
@@ -152,7 +197,7 @@ def _load_remaining_ids() -> List[str]:
     return list(ids_to_process - already_processed_ids)
 
 
-def run() -> None:
+def _run_ocr() -> None:
     ids = _load_remaining_ids()
     random.shuffle(ids)
 
@@ -167,6 +212,17 @@ def run() -> None:
             print(f'Error when processing {id_}:\n{error}')
 
 
+def run() -> None:
+    parser = argparse.ArgumentParser(description='Run the OCR pipeline')
+    parser.add_argument(
+        '--compute-advancement', action='store_true', help='Run computation of advancement', required=False
+    )
+    args = parser.parse_args()
+    if args.compute_advancement:
+        _run_compute_advancement()
+    else:
+        _run_ocr()
+
+
 if __name__ == '__main__':
     run()
-    # _compute_advancement()

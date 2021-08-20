@@ -1,5 +1,6 @@
 # secret
 scripts/s3ic.py
+scripts/recreate_remote_ams.py
 config.ini
 
 # python

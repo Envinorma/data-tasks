@@ -166,8 +166,9 @@ def _check_date_of_signature(date_of_signature: Optional[date]):
 
 
 def _check_regimes(am: ArreteMinisteriel) -> None:
+    # Non transversal AMs must have exactly one regime
     regimes = {clas.regime for clas in am.classements}
-    if len(regimes) != 1:
+    if not am.is_transverse and len(regimes) != 1:
         raise ValueError(regimes)
 
 

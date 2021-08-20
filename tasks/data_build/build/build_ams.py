@@ -1,3 +1,4 @@
+import psycopg2
 import json
 import os
 from typing import Any, Dict, List, Optional
@@ -13,7 +14,12 @@ from tasks.data_build.config import DATA_FETCHER, generate_parametric_descriptor
 from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
 from tasks.data_build.load import load_ams
 
-_AM_ID_TO_METADATA = {id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')}
+try:
+    _AM_ID_TO_METADATA = {
+        id_: md for id_, md in DATA_FETCHER.load_all_am_metadata().items() if not id_.startswith('FAKE')
+    }
+except psycopg2.OperationalError:
+    _AM_ID_TO_METADATA = {}
 
 
 def _dump_am_versions(am_id: str, versions: AMVersions) -> None:

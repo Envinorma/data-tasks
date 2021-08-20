@@ -12,3 +12,7 @@ download-backup:
 
 init-db-from-backup:
 	python3 scripts/recreate_db_from_backup.py
+
+init-db-from-heroku-db:
+	make download-backup
+	make init-db-from-backup
