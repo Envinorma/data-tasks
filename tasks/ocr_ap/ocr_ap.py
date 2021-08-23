@@ -85,6 +85,7 @@ def _download_ocr_and_upload_document(georisques_id: str):
 def _upload_error_file(georisques_id: str, error: str):
     with tempfile.NamedTemporaryFile(mode='w') as file_:
         file_.write(error)
+        file_.flush()
         _upload_to_ovh(file_.name, _ovh_error_filename(georisques_id))
 
 
