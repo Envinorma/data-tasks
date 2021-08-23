@@ -2,14 +2,22 @@
 import re
 import shutil
 import tempfile
-from typing import List, Literal, Set, Tuple, TypeVar
+from collections import Counter
+from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
 from swiftclient.service import SwiftService
+from tqdm import tqdm
 
 from tasks.common.ovh_upload import BucketName, init_swift_service
 
 T = TypeVar('T')
+
+
+def _typed_tqdm(
+    collection: Iterable[T], desc: Optional[str] = None, leave: bool = True, disable: bool = False
+) -> Iterable[T]:
+    return tqdm(collection, desc=desc, leave=leave, disable=disable)
 
 
 _GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}\.')
@@ -70,7 +78,8 @@ def _fetch_already_processed_ids_with_statuses() -> Set[Tuple[str, _OCRStatus]]:
 
 def _fetch_errors() -> Set[str]:
     ids_with_statuses = _fetch_already_processed_ids_with_statuses()
-    return {id_ for id_, status in ids_with_statuses if status == 'error'}
+    success_ids = {id_ for id_, status in ids_with_statuses if status == 'success'}
+    return {id_ for id_, status in ids_with_statuses if status == 'error' if id_ not in success_ids}
 
 
 def _read_remote_file(remote_filename: str) -> str:
@@ -79,11 +88,62 @@ def _read_remote_file(remote_filename: str) -> str:
         return file_.read().decode()
 
 
+_SUBSTITUTES = dict(
+    [
+        (
+            r'cannot identify image file .*\n\nThe above exception was the direct cause of the following exception',
+            'cannot identify image file <FILE>\n\nThe above exception was the direct cause of the following exception',
+        ),
+        (
+            r'The requested URL .* was not found on this server',
+            'The requested URL <URL> was not found on this server',
+        ),
+        (
+            r'pdf = Pdf\._open\(\npikepdf.*origin\.pdf:',
+            'pdf = Pdf._open(\npikepdf._qpdf.PdfError: <FILE>origin.pdf:',
+        ),
+        (
+            r'line [0-9]* ',
+            'line <LINE>',
+        ),
+        (
+            r'line [0-9]*,',
+            'line <LINE>,',
+        ),
+        (
+            r'    _download_ocr_and_upload_document\(id_\)\n',
+            '',
+        ),
+    ]
+)
+
+
+def _substitute_all_occurrences(regexp: str, subst: str, text: str) -> str:
+    while True:
+        new_text = re.sub(regexp, subst, text, flags=re.MULTILINE)
+        if new_text == text:
+            return new_text
+        text = new_text
+
+
+def _clean_error_traceback(error_traceback: str) -> str:
+    clean_traceback = error_traceback
+    for regexp, substitute in _SUBSTITUTES.items():
+        clean_traceback = _substitute_all_occurrences(regexp, substitute, clean_traceback)
+    return clean_traceback
+
+
 def run():
     errors = _fetch_errors()
-    error_filenames = sorted({_ovh_error_filename(id_) for id_ in errors})
     print(f'Found {len(errors)} errors')
-    print(error_filenames)
+    id_to_error = {id_: _read_remote_file(_ovh_error_filename(id_)) for id_ in _typed_tqdm(errors)}
+    id_with_empty_error = {id_ for id_, error in id_to_error.items() if not error.strip()}
+    id_to_clean_error = {id_: _clean_error_traceback(error) for id_, error in id_to_error.items()}
+    for index, (error, nb_occs) in enumerate(Counter(id_to_clean_error.values()).most_common()):
+        with open(f'error_{index}_with_{nb_occs}_occs.txt', 'w') as file_:
+            file_.write(error)
+
+    print(f'Found {len(id_with_empty_error)} ids with empty error')
 
 
 if __name__ == '__main__':
