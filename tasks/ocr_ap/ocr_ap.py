@@ -85,6 +85,7 @@ def _download_ocr_and_upload_document(georisques_id: str):
 def _upload_error_file(georisques_id: str, error: str):
     with tempfile.NamedTemporaryFile(mode='w') as file_:
         file_.write(error)
+        file_.flush()
         _upload_to_ovh(file_.name, _ovh_error_filename(georisques_id))
 
 
@@ -197,12 +198,12 @@ def _load_remaining_ids() -> List[str]:
     return list(ids_to_process - already_processed_ids)
 
 
-def _run_ocr() -> None:
+def _run_ocr(force_redo_ocr: bool) -> None:
     ids = _load_remaining_ids()
     random.shuffle(ids)
 
     for id_ in typed_tqdm(ids):
-        if _file_already_processed(id_):
+        if _file_already_processed(id_) and not force_redo_ocr:
             continue
         try:
             _download_ocr_and_upload_document(id_)
@@ -212,17 +213,27 @@ def _run_ocr() -> None:
             print(f'Error when processing {id_}:\n{error}')
 
 
-def run() -> None:
+def _run(compute_advancement: bool = False, force_redo_ocr: bool = False) -> None:
+    if compute_advancement:
+        _run_compute_advancement()
+    else:
+        _run_ocr(force_redo_ocr)
+
+
+def cli() -> None:
     parser = argparse.ArgumentParser(description='Run the OCR pipeline')
     parser.add_argument(
         '--compute-advancement', action='store_true', help='Run computation of advancement', required=False
     )
+    parser.add_argument(
+        '--force-redo-ocr',
+        action='store_true',
+        help='Force redo OCR even if the file is already processed',
+        required=False,
+    )
     args = parser.parse_args()
-    if args.compute_advancement:
-        _run_compute_advancement()
-    else:
-        _run_ocr()
+    _run(compute_advancement=args.compute_advancement, force_redo_ocr=args.force_redo_ocr)
 
 
 if __name__ == '__main__':
-    run()
+    cli()
