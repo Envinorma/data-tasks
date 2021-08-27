@@ -7,7 +7,7 @@ from tasks.common.ovh import OVHClient
 from tasks.data_build.filenames import Dataset, dataset_filename
 from tasks.data_build.load import load_documents_from_csv
 
-OCRStatus = Literal['ERROR', 'SUCCESS', 'NEVER_ATTEMPTED']
+OCRStatus = Literal['ERROR', 'SUCCESS', 'NOT_ATTEMPTED']
 
 
 def _rowify_ap(ap: Document, status: OCRStatus, document_size: Optional[int]) -> Dict[str, Any]:
@@ -17,7 +17,7 @@ def _rowify_ap(ap: Document, status: OCRStatus, document_size: Optional[int]) ->
         'description': ap.description,
         'date': ap.date,
         'georisques_id': ap.georisques_id,
-        'status': status,
+        'ocr_status': status,
         'size': document_size,
     }
 
@@ -30,7 +30,7 @@ def _build_aps_dataframe(aps: List[Document]) -> pandas.DataFrame:
 
 def _deduce_status_and_size(size: Optional[int], error: bool) -> Tuple[OCRStatus, Optional[int]]:
     if size is None:
-        return ('ERROR' if error else 'NEVER_ATTEMPTED', None)
+        return ('ERROR' if error else 'NOT_ATTEMPTED', None)
     return ('SUCCESS', size)
 
 
@@ -46,7 +46,7 @@ def dump_aps(dataset: Dataset) -> None:
     print(f'Found {len(aps)} AP for dataset {dataset}.')
     assert len(aps) >= 100, f'Expecting >= 100 aps, got {len(aps)}'
     dataframe = _build_aps_dataframe(aps)
-    print(f'Statuses:\n{dataframe.status.value_counts()}')
+    print(f'Statuses:\n{dataframe.ocr_status.value_counts()}')
     dataframe.to_csv(dataset_filename(dataset, 'aps'), index=False)
 
 

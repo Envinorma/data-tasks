@@ -4,9 +4,10 @@ from typing import Any, Dict, List, Set
 
 import pandas
 from tqdm import tqdm
-
+from collections import Counter
 from ..filenames import dataset_filename
 from ..load import load_installations_csv
+from ..build.build_aps import OCRStatus
 
 _DIGITS = set('0123456789')
 
@@ -57,9 +58,17 @@ def _check_record(record: Dict[str, Any], installations_ids: Set[str]) -> None:
     _check_installation_exists(record['installation_s3ic_id'], installations_ids)
 
 
+def _ensure_enough_success_ocr(statuses: List[OCRStatus]) -> None:
+    nb_success = Counter(statuses)['SUCCESS']
+    success_rate = nb_success / (len(statuses) or 1)
+    if success_rate <= 0.9:
+        raise ValueError(f'Only {success_rate}% of APs have been successfully OCR\'ed.')
+
+
 def _check_output(dataframe: pandas.DataFrame, installations_ids: Set[str]) -> None:
     for record in tqdm(dataframe.to_dict(orient='records'), 'Checking AP'):
         _check_record(record, installations_ids)
+    _ensure_enough_success_ocr(dataframe.ocr_status.tolist())
 
 
 def check_documents_csv() -> None:
