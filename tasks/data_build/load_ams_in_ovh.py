@@ -9,7 +9,7 @@ import shutil  # noqa: E402
 import tempfile  # noqa: E402
 from datetime import datetime  # noqa: E402
 
-from ..common.ovh_upload import BucketName, init_swift_service, upload_document  # noqa: E402
+from ..common.ovh import BucketName, OVHClient  # noqa: E402
 from .build.build_am_repository import generate_am_repository  # noqa: E402
 from .build.build_ams import generate_ams  # noqa: E402
 from .config import AM_REPOSITORY_FOLDER  # noqa: E402
@@ -19,7 +19,7 @@ _AM_BUCKET: BucketName = 'am'
 
 
 def _upload_to_ovh(local_filename: str, remote_filename: str) -> None:
-    upload_document(_AM_BUCKET, init_swift_service(), local_filename, remote_filename)
+    OVHClient.upload_document(_AM_BUCKET, local_filename, remote_filename)
 
 
 def _remote_filename() -> str:

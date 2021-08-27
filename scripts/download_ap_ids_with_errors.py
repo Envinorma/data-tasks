@@ -6,10 +6,9 @@ from collections import Counter
 from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
-from swiftclient.service import SwiftService
 from tqdm import tqdm
 
-from tasks.common.ovh_upload import BucketName, init_swift_service
+from tasks.common.ovh import OVHClient
 
 T = TypeVar('T')
 
@@ -36,13 +35,8 @@ def download_document(url: str, output_filename: str) -> None:
         raise ValueError(f'Error when downloading document: {req.content.decode()}')
 
 
-def _get_bucket_object_names(bucket: BucketName, service: SwiftService) -> List[str]:
-    lists = list(service.list(bucket))
-    return [x['name'] for list_ in lists for x in list_['listing']]
-
-
 def _get_uploaded_ap_files() -> List[str]:
-    return _get_bucket_object_names('ap', init_swift_service())
+    return OVHClient.list_bucket_object_names('ap')
 
 
 def _ovh_error_filename(georisques_id: str) -> str:
