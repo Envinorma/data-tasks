@@ -7,6 +7,9 @@ test-and-lint:
 generate-am:
 	python3 -m tasks.data_build.generate_data --handle-ams
 
+generate-ap:
+	python3 -m tasks.data_build.generate_data --handle-aps
+
 download-backup:
 	sh scripts/download_backup.sh
 

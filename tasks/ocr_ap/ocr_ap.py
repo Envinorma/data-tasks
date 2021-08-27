@@ -8,15 +8,14 @@ import tempfile
 import time
 import traceback
 from datetime import datetime
-from typing import Dict, Iterable, List, Literal, Optional, Set, Tuple, TypeVar
+from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
 from ocrmypdf import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
-from swiftclient.service import SwiftService
 from tqdm import tqdm
 
-from tasks.common.ovh_upload import BucketName, init_swift_service, upload_document
+from tasks.common.ovh import OVHClient
 
 T = TypeVar('T')
 
@@ -64,7 +63,7 @@ def _ocr(input_filename: str, output_filename: str) -> None:
 
 
 def _upload_to_ovh(filename: str, destination: str) -> None:
-    upload_document('ap', init_swift_service(), filename, destination)
+    OVHClient.upload_document('ap', filename, destination)
 
 
 def _ovh_filename(georisques_id: str) -> str:
@@ -89,24 +88,14 @@ def _upload_error_file(georisques_id: str, error: str):
         _upload_to_ovh(file_.name, _ovh_error_filename(georisques_id))
 
 
-def _file_exists(filename: str, bucket_name: BucketName, service: SwiftService) -> bool:
-    results: List[Dict] = list(service.stat(bucket_name, [filename]))  # type: ignore
-    return results[0]['success']
-
-
 def _file_already_processed(georisques_id: str) -> bool:
-    ocred_file_exists = _file_exists(_ovh_filename(georisques_id), 'ap', init_swift_service())
-    error_file_exists = _file_exists(_ovh_error_filename(georisques_id), 'ap', init_swift_service())
+    ocred_file_exists = OVHClient.file_exists(_ovh_filename(georisques_id), 'ap')
+    error_file_exists = OVHClient.file_exists(_ovh_error_filename(georisques_id), 'ap')
     return ocred_file_exists or error_file_exists
 
 
-def _get_bucket_object_names(bucket: BucketName, service: SwiftService) -> List[str]:
-    lists = list(service.list(bucket))
-    return [x['name'] for list_ in lists for x in list_['listing']]
-
-
 def _get_uploaded_ap_files() -> List[str]:
-    return _get_bucket_object_names('ap', init_swift_service())
+    return OVHClient.list_bucket_object_names('ap')
 
 
 def _get_computed_nb_tasks() -> int:

@@ -9,7 +9,7 @@ import subprocess  # noqa: E402
 import tempfile  # noqa: E402
 from datetime import datetime  # noqa: E402
 
-from .common.ovh_upload import BucketName, init_swift_service, upload_document  # noqa: E402
+from .common.ovh import BucketName, OVHClient  # noqa: E402
 
 _AM_BUCKET: BucketName = 'am'
 
@@ -40,7 +40,7 @@ def _download_backup_from_heroku(filename: str) -> None:
 
 def _upload_backup_to_ovh(local_filename: str, remote_filename: str) -> None:
     print('Uploading backup')
-    upload_document(_AM_BUCKET, init_swift_service(), local_filename, remote_filename)
+    OVHClient.upload_document(_AM_BUCKET, local_filename, remote_filename)
 
 
 def _backup_remote_filename() -> str:

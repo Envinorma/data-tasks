@@ -1,26 +1,13 @@
 '''Evaluate the size distribution of files'''
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import List, Tuple
 
 import numpy as np
-from swiftclient.service import SwiftService
 
-from tasks.common.ovh_upload import BucketName, init_swift_service
-
-
-def _fetch_bucket_objects(bucket_name: BucketName, service: SwiftService) -> Iterable[Dict[str, Any]]:
-    return service.list(bucket_name)
+from tasks.common.ovh import OVHClient
 
 
 def _fetch_names_and_sizes_of_aps() -> List[Tuple[str, int]]:
-    service = init_swift_service()
-    batches = _fetch_bucket_objects('ap', service)
-    names_and_sizes: List[Tuple[str, int]] = [
-        (element['name'], element['bytes'])
-        for batch in batches
-        for element in batch['listing']
-        if element['name'].endswith('.pdf')
-    ]
-    return names_and_sizes
+    return [(name, size) for name, size in OVHClient.objects_name_and_sizes('ap').items() if name.endswith('.pdf')]
 
 
 def _size_in_mo(size: int) -> float:
