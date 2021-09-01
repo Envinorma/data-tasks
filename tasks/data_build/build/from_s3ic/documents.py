@@ -3,12 +3,11 @@ import os
 from typing import Dict, List
 
 import requests
-from tqdm import tqdm
-
 from envinorma.models.document import Document
-from tasks.data_build.load import load_documents_from_csv, load_installation_ids
-from tasks.data_build.filenames import GEORISQUES_URL, Dataset, dataset_filename
 from envinorma.utils import batch, typed_tqdm, write_json
+
+from tasks.data_build.filenames import GEORISQUES_URL, Dataset, dataset_filename
+from tasks.data_build.load import load_documents_from_csv, load_installation_ids
 
 
 def _no_docs(dicts: List[Dict]) -> bool:
@@ -66,7 +65,7 @@ def download_georisques_documents(dataset: Dataset = 'all') -> None:
     _create_if_inexistent(folder)
     batches = batch(s3ic_ids, 1000)
     filenames = [f'{folder}/{batch_id}.json' for batch_id in range(len(batches))]
-    for filename, batch_ in tqdm(list(zip(filenames, batches)), 'Downloading document batches'):
+    for filename, batch_ in typed_tqdm(list(zip(filenames, batches)), 'Downloading document batches'):
         _download_if_inexistent(filename, batch_)
     _combine_and_dump(filenames, dataset_filename(dataset, 'documents', 'json'))
 

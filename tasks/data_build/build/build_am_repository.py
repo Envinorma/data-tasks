@@ -2,21 +2,20 @@
 Generate AM open data repository
 cf https://github.com/Envinorma/arretes-ministeriels
 '''
-from envinorma.models.arrete_ministeriel import ArreteMinisteriel
-from tasks.data_build.build.build_ams import safe_load_id_to_text
 import json
 import os
 from typing import Any, Dict, List, Union
+
+from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.parametrization import Parametrization
 from envinorma.utils import typed_tqdm
 
-from tasks.data_build.config import DATA_FETCHER, AM_REPOSITORY_FOLDER
-from tasks.data_build.filenames import ENRICHED_OUTPUT_FOLDER
+from tasks.data_build.build.build_ams import safe_load_id_to_text
+from tasks.data_build.config import AM_REPOSITORY_FOLDER, DATA_FETCHER
 
 _METADATA_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'metadata')
 _BASE_AMS_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'base_ams')
 _PARAMETRIZATIONS_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'parametrizations')
-_VERSIONS_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'versions')
 
 
 def _create_if_inexistent(folder: str) -> None:
@@ -69,34 +68,6 @@ def _generate_parametrizations_folder() -> None:
         _dump_parametrization(am_id, parametrization)
 
 
-def _load_all_am_versions() -> List[Dict[str, Any]]:
-    filenames = os.listdir(ENRICHED_OUTPUT_FOLDER)
-    return [json.load(open(os.path.join(ENRICHED_OUTPUT_FOLDER, filename))) for filename in filenames]
-
-
-def _group_by_key(dicts: List[Dict[str, Any]], key: str) -> Dict[Any, List[Dict[str, Any]]]:
-    result: Dict[str, List[Dict[str, Any]]] = {}
-    for dict_ in dicts:
-        value = dict_[key]
-        if value not in result:
-            result[value] = []
-        result[value].append(dict_)
-    return result
-
-
-def _dump_am_versions(am_id: str, versions: List[Any]) -> None:
-    filename = os.path.join(_VERSIONS_FOLDER, am_id + '.json')
-    _dump(versions, filename)
-
-
-def _generate_versions_folder() -> None:
-    _create_if_inexistent(_VERSIONS_FOLDER)
-    am_versions = _load_all_am_versions()
-    groupped_am = _group_by_key(am_versions, 'id')
-    for am_id, ams in typed_tqdm(groupped_am.items(), 'Dumping am versions'):
-        _dump_am_versions(am_id, ams)
-
-
 def _empty_directory(folder: str) -> None:
     if os.path.exists(folder):
         for file_ in os.listdir(folder):
@@ -107,8 +78,6 @@ def generate_am_repository() -> None:
     _empty_directory(_METADATA_FOLDER)
     _empty_directory(_BASE_AMS_FOLDER)
     _empty_directory(_PARAMETRIZATIONS_FOLDER)
-    _empty_directory(_VERSIONS_FOLDER)
     _generate_metadata_folder()
     _generate_base_ams_folder()
     _generate_parametrizations_folder()
-    _generate_versions_folder()
