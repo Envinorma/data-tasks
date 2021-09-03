@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import psycopg2
 from envinorma.enriching import enrich
 from envinorma.models import AMMetadata, ArreteMinisteriel, Ints
+from envinorma.models.condition import OrCondition
 from envinorma.models.structured_text import (
     PotentialInapplicability,
     PotentialModification,
@@ -88,9 +89,13 @@ def _add_parametrization_in_section(text: StructuredText, path: Ints, parametriz
 
 def _am_inapplicabilities(am: ArreteMinisteriel, parametrization: Parametrization) -> None:
     am.applicability.warnings = _warnings(parametrization.path_to_warnings.get((), []))
-    am.applicability.conditions_of_inapplicability = [
-        condition.condition for condition in parametrization.path_to_conditions.get((), [])
-    ]
+    conditions = [cd.condition for cd in parametrization.path_to_conditions.get((), [])]
+    if len(conditions) >= 2:
+        am.applicability.condition_of_inapplicability = OrCondition(frozenset(conditions))
+    elif len(conditions) == 1:
+        am.applicability.condition_of_inapplicability = conditions[0]
+    else:
+        am.applicability.condition_of_inapplicability = None
 
 
 def _add_parametrization(am: ArreteMinisteriel, parametrization: Parametrization) -> None:

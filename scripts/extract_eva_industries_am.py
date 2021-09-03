@@ -12,7 +12,7 @@ from tasks.data_build.config import SEED_FOLDER
 
 _OUTPUT_FOLDER = 'eva_seeds'
 _INPUT_FOLDER = SEED_FOLDER
-_ENRICHED_INPUT_FOLDER = os.path.join(_INPUT_FOLDER, 'enriched_arretes')
+_ENRICHED_INPUT_FOLDER = os.path.join(_INPUT_FOLDER, 'ams')
 _AM_LIST = os.path.join(_INPUT_FOLDER, 'am_list.json')
 _AM_IDS = {'JORFTEXT000038358856', 'JORFTEXT000033560858', 'JORFTEXT000000552021', 'JORFTEXT000000369330'}
 

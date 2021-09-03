@@ -41,6 +41,7 @@ def generate_unique_classements_from_georisques() -> None:
         .sort_values(by=['rubrique', 'regime', 'alinea'])
     )
     final_csv.alinea = final_csv.alinea.apply(_replace_alinea)
+    final_csv.regime = final_csv.regime.apply(_clean_georisques_regime)
     output_filename = os.path.join(SEED_FOLDER, 'classement_references.csv')
     final_csv.to_csv(output_filename, index=False)
 
