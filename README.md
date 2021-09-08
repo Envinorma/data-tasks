@@ -43,7 +43,7 @@ python3 -m tasks.data_build.generate_data --handle-installations-data
 
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction géorisques : `IC_documents.csv` et `IC_types_document.csv`
 
-- Remplacer `$OUTPUT_FOLDER` par le chemin vers le dossier dans lequel générer les fichiers CSV (`aps_all.csv`, `aps_idf.csv`, `aps_sample.csv`)
+- Remplacer `$OUTPUT_FOLDER` par le chemin vers le dossier dans lequel générer les fichiers CSV (`aps_all.csv`, `aps_idf.csv`, `aps_sample.csv`). Ce dossier doit contenir les fichiers `installations{}.csv` (cf. paragraphe ci-dessus pour les générer.)
 
 ### 1. Avec docker
 
@@ -69,6 +69,9 @@ python3 -m tasks.data_build.generate_data --handle-aps
 
 ## Faire tourner l'OCR sur les APs dont l'OCR n'a pas été exécuté
 
+- Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les aps : `aps_all.csv`
+- Remplacer les valeurs des variables d'environnement FILL_WITH_CORRECT_VALUE par les secrets OVH
+
 ```sh
 docker build -t ocr -f ocr.dockerfile .
 docker run -it --rm\
@@ -81,6 +84,7 @@ docker run -it --rm\
   -e OS_USERNAME=FILL_WITH_CORRECT_VALUE\
   -e OS_PASSWORD=FILL_WITH_CORRECT_VALUE\
   -e OS_REGION_NAME=SBG\
+  -v /data/seeds=$INPUT\
   ocr
 ```
 

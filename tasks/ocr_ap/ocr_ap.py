@@ -1,6 +1,4 @@
 import argparse
-import json
-import pathlib
 import random
 import re
 import shutil
@@ -10,6 +8,7 @@ import traceback
 from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
+import pandas as pd
 import requests
 from ocrmypdf import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
@@ -26,19 +25,13 @@ def typed_tqdm(
     return tqdm(collection, desc=desc, leave=leave, disable=disable)
 
 
-def _data_filename() -> str:
-    candidate = pathlib.Path(__file__).parent / 'georisques_ids.json'
-    if not candidate.exists():
-        raise ValueError('Data file not found.')
-    return str(candidate)
-
-
 GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-durable.gouv.fr/commun'
+APS_FILENAME = '/data/seeds/aps_all.csv'
 configure_logging(Verbosity.quiet)
 
 
 def _load_all_georisques_ids() -> List[str]:
-    return json.load(open(_data_filename()))
+    return pd.read_csv(APS_FILENAME)['georisques_id'].tolist()
 
 
 def download_document(url: str, output_filename: str) -> None:
