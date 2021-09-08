@@ -10,7 +10,6 @@ from envinorma.models.arrete_ministeriel import ArreteMinisteriel
 from envinorma.parametrization import Parametrization
 from envinorma.utils import typed_tqdm
 
-from tasks.data_build.build.build_ams import safe_load_id_to_text
 from tasks.data_build.config import AM_REPOSITORY_FOLDER, DATA_FETCHER
 
 _METADATA_FOLDER = os.path.join(AM_REPOSITORY_FOLDER, 'metadata')
@@ -46,7 +45,7 @@ def _dump_am(am: Dict[str, Any]) -> None:
 
 
 def _load_base_ams() -> Dict[str, ArreteMinisteriel]:
-    return safe_load_id_to_text()
+    return DATA_FETCHER.load_id_to_most_advanced_am()
 
 
 def _generate_base_ams_folder() -> None:

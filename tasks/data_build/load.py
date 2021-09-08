@@ -101,9 +101,6 @@ def load_ams(ids: Optional[Set[str]] = None) -> Dict[str, ArreteMinisteriel]:
         Dict[str, ArreteMinisteriel]: Dict mapping am_id to the corresponding AM.
     """
     logging.info('loading AM.')
-    ids = ids or set(list(load_am_metadata().keys()))
-    structured_texts = DATA_FETCHER.load_structured_ams(ids)
-    id_to_structured_text = {text.id or '': text for text in structured_texts}
-    initial_texts = DATA_FETCHER.load_initial_ams(ids)
-    id_to_initial_text = {text.id or '': text for text in initial_texts}
-    return {id_: ensure_not_none(id_to_structured_text.get(id_) or id_to_initial_text.get(id_)) for id_ in ids}
+    ids = ids or set(list(DATA_FETCHER.load_all_am_metadata().keys()))
+    ams = DATA_FETCHER.load_id_to_most_advanced_am(ids)
+    return {id_: ensure_not_none(ams.get(id_)) for id_ in ids}

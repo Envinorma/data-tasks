@@ -19,8 +19,10 @@ RUN apt-get -y install \
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir /data
-RUN mkdir /data/seed
+RUN mkdir /data/seeds
 RUN mkdir /data/repo
+
+ENV PYTHONPATH /usr/src/app
 
 COPY . .
 

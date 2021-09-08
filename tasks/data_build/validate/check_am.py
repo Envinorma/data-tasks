@@ -81,5 +81,3 @@ def check_ams() -> None:
     for filename, am in typed_tqdm(ams.items(), 'Checking AMs'):
         _check_am_id_format(filename.split('.json')[0])
         _check_am(am)
-    for reg in 'AED':
-        assert f'JORFTEXT000034429274_{reg}' not in ams

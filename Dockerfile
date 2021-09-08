@@ -5,10 +5,12 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir /data
-RUN mkdir /data/seed
+RUN mkdir /data/seeds
 RUN mkdir /data/repo
 
 RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
+ENV PYTHONPATH /usr/src/app
 
 COPY . .
 
