@@ -1,6 +1,7 @@
 import json
 
 from envinorma.models.document import DocumentType
+
 from tasks.data_build.load import load_aps
 
 

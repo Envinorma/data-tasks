@@ -1,13 +1,14 @@
 import re
+from collections import Counter
 from datetime import date
 from typing import Any, Dict, List, Set
 
 import pandas
 from tqdm import tqdm
-from collections import Counter
+
+from ..build.build_aps import OCRStatus
 from ..filenames import dataset_filename
 from ..load import load_installations_csv
-from ..build.build_aps import OCRStatus
 
 _DIGITS = set('0123456789')
 

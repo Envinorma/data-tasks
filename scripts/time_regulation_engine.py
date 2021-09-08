@@ -5,9 +5,8 @@ the performance if implemented like this in envinorma-web.
 from time import time
 from typing import Any, Dict, List, Tuple
 
-from envinorma.models import AMMetadata, ArreteMinisteriel, DetailedClassement, DetailedRegime
+from envinorma.models import AMMetadata, ArreteMinisteriel, DetailedClassement, DetailedRegime, Parameter, ParameterEnum
 from envinorma.parametrization.apply_parameter_values import apply_parameter_values_to_am
-from envinorma.parametrization.models.parameter import Parameter, ParameterEnum
 
 from tasks.data_build.config import DATA_FETCHER
 from tasks.data_build.load import load_classements
@@ -87,7 +86,7 @@ def _fetch_and_apply_parameters(am_id: str, classements: List[DetailedClassement
     parameters = _parameter_dict(classements)
     try:
         return apply_parameter_values_to_am(am, parametrization, parameters)
-    except:
+    except ValueError:
         print(parameters)
         print(am_id)
         raise
