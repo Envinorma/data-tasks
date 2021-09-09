@@ -19,7 +19,7 @@ def get_config_variable(section: str, varname: str) -> str:
         return config[section][varname]
     except KeyError:
         try:
-            default_config = load_config('config.ini')
+            default_config = load_config('default_config.ini')
             value = default_config[section][varname]
             if not value:
                 raise KeyError
