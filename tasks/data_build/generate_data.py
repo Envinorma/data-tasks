@@ -26,6 +26,7 @@ def _build_aps_from_georisques():
     from_georisques.build_all_documents()
     from_georisques.build_all_documents_datasets()
     dump_ap_datasets()
+    check_documents_csv()
 
 
 def _build_installations_data():
@@ -38,7 +39,6 @@ def _build_installations_data():
 def _check_installations_data():
     check_classements_csv()
     check_installations_csv()
-    check_documents_csv()
 
 
 def _handle_installations_data():
