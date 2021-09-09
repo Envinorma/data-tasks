@@ -26,7 +26,7 @@ def get_config_variable(section: str, varname: str) -> str:
             return value
         except KeyError:
             raise _ConfigError(
-                f'Variable {varname} must either be defined in environment,' ' in config.ini or in default_config.ini.'
+                f'Variable {varname} must either be defined in environment, in config.ini or in default_config.ini'
             )
 
 
