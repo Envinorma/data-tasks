@@ -1,26 +1,23 @@
 from datetime import date
-from envinorma.models import Regime
 from typing import Any, Dict, cast
 
 import pandas as pd
+from envinorma.models import Regime
+from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tqdm import tqdm
 
-from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tasks.data_build.filenames import S3IC_INSTALLATIONS_FILENAME, Dataset, dataset_filename
 
 
 def _load_A_E_installations() -> pd.DataFrame:
-    installations_with_duplicates = pd.read_csv(S3IC_INSTALLATIONS_FILENAME, sep=';', dtype='str')
-    installations_with_D = installations_with_duplicates.drop_duplicates()
+    raw_installations = pd.read_csv(S3IC_INSTALLATIONS_FILENAME, sep=';', dtype='str')
+    without_duplicates = raw_installations.drop_duplicates()
     publishable_regimes = {'A', 'E', 'S', '2'}
-    installations_with_duplicated_ids = installations_with_D[
-        installations_with_D['régime_etab_en_vigueur'].apply(lambda x: x in publishable_regimes)
-    ]
+    regime_key = 'régime_etab_en_vigueur'
+    without_D = without_duplicates[without_duplicates[regime_key].apply(lambda x: x in publishable_regimes)].copy()
     regime_map = {'A': 'A', 'E': 'E', 'S': 'A', '2': 'A'}
-    installations_with_duplicated_ids['régime_etab_en_vigueur'] = installations_with_duplicated_ids[
-        'régime_etab_en_vigueur'
-    ].apply(lambda x: regime_map[x])
-    return installations_with_duplicated_ids.groupby('code_s3ic').last().reset_index()
+    without_D.loc[:, regime_key] = without_D[regime_key].apply(lambda x: regime_map[x])  # type: ignore
+    return without_D.groupby('code_s3ic').last().reset_index()  # keep one installation per code_s3ic
 
 
 def _rename_installations_columns(input_installations: pd.DataFrame) -> pd.DataFrame:
@@ -68,13 +65,13 @@ def _map_seveso(seveso_in: str) -> str:
 
 def _modify_and_keep_final_installations_cols(installations: pd.DataFrame) -> pd.DataFrame:
     installations = installations.copy()
-    installations['num_dep'] = installations.code_postal.apply(lambda x: (x or '')[:2])
-    installations['last_inspection'] = installations.last_inspection.apply(
+    installations.loc[:, 'num_dep'] = installations.code_postal.apply(lambda x: (x or '')[:2])  # type: ignore
+    installations.loc[:, 'last_inspection'] = installations.last_inspection.apply(  # type: ignore
         lambda x: date.fromisoformat(x) if isinstance(x, str) else None
     )
-    installations['family'] = installations.family.apply(_map_family)
-    installations['active'] = installations['active'].fillna('')  # type: ignore
-    installations['seveso'] = installations['seveso'].fillna('').apply(_map_seveso)  # type: ignore
+    installations.loc[:, 'family'] = installations.family.apply(_map_family)  # type: ignore
+    installations.loc[:, 'active'] = installations['active'].fillna('')  # type: ignore
+    installations.loc[:, 'seveso'] = installations['seveso'].fillna('').apply(_map_seveso)  # type: ignore
     expected_keys = [x for x in Installation.__dataclass_fields__]  # type: ignore
     return cast(pd.DataFrame, installations[expected_keys])
 
