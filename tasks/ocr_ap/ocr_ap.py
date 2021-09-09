@@ -177,10 +177,11 @@ def _fetch_already_processed_ids() -> Set[str]:
 
 
 def _load_remaining_ids() -> List[str]:
-    already_processed_ids = _fetch_already_processed_ids()
     ids_to_process = set(_load_all_georisques_ids())
-    print(f'{len(already_processed_ids)} ids already processed, {len(ids_to_process)} ids to process.')
-    return list(ids_to_process - already_processed_ids)
+    already_processed_ids = _fetch_already_processed_ids() & ids_to_process
+    remaining_ids = list(ids_to_process - already_processed_ids)
+    print(f'{len(already_processed_ids)} APs already processed, {len(remaining_ids)} APs left to process.')
+    return remaining_ids
 
 
 def _run_ocr(force_redo_ocr: bool) -> None:
