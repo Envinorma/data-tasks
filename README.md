@@ -13,6 +13,8 @@ cd data-tasks
 
 ## Mettre à jour les classements et les installations à partir de l'extraction S3IC
 
+Pour créer les fichiers CSV des classements et installations utilisés par l'application Envinorma, utiliser au choix docker ou python 3.8. Dans les deux cas, cloner le dépôt comme indiqué ci-dessus puis remplacer dans le script les deux variables suivantes :
+
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction DGPR: `AP svelte/s3ic-liste-etablissements.csv` et `AP svelte/sic-liste-rubriques.csv`
 
 - Remplacer `$OUTPUT_FOLDER` par le chemin vers le dossier dans lequel générer les fichiers CSV (`installations_all.csv`, `installations_idf.csv`, `installations_sample.csv`, `classements_all.csv`, `classements_idf.csv`, `classements_sample.csv`)
@@ -40,6 +42,8 @@ python3 -m tasks.data_build.generate_data --handle-installations-data
 ```
 
 ## Mettre à jour les fichiers aps{}.csv à partir de l'extraction géorisques
+
+Pour créer le CSV des aps utilisé par l'application Envinorma, utiliser au choix docker ou python 3.8. Dans les deux cas, cloner le dépôt comme indiqué ci-dessus puis remplacer dans le script les deux variables suivantes :
 
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction géorisques : `IC_documents.csv` et `IC_types_document.csv`
 
@@ -69,6 +73,8 @@ python3 -m tasks.data_build.generate_data --handle-aps
 
 ## Faire tourner l'OCR sur les APs dont l'OCR n'a pas été exécuté
 
+Pour ajouter la couche de reconnaissance de caractères sur les AP et les uploader sur OVH, installer docker et remplacer dans le script les deux variables suivantes avant de l'exécuter (après avoir cloné le dépôt comme indiqué ci-dessus) :
+
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les aps : `aps_all.csv`
 - Remplacer les valeurs des variables d'environnement FILL_WITH_CORRECT_VALUE par les secrets OVH
 
@@ -91,6 +97,8 @@ docker run -it --rm\
 Puis reconstruire les fichier aps.csv à partir du paragraphe ci-dessus `Mettre à jour les fichiers aps[...]`
 
 ## Générer la nomenclature `classement_references.csv` à partir de l'extraction géorisques
+
+Le fichier CSV contenant les références de classements peut être généré avec python>=3.8 ou docker (cf. scripts ci-dessous). Dans les deux cas, après avoir cloné le dépôt comme indiqué ci-dessus, remplacer les variables suivantes :
 
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant le fichier issus de l'extraction géorisques : `IC_ref_nomenclature_ic.csv`
 
