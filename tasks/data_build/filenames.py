@@ -21,5 +21,5 @@ GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-
 GEORISQUES_DOCUMENTS_FILENAME = f'{SECRET_DATA_FOLDER}/georisques_documents.json'
 INSTALLATIONS_OPEN_DATA_FILENAME = f'{SECRET_DATA_FOLDER}/icpe.geojson'
 DOCUMENTS_FOLDER = f'{SECRET_DATA_FOLDER}/icpe_documents'
-DGPR_INSTALLATIONS_FILENAME = f'{SECRET_DATA_FOLDER}/AP svelte/s3ic-liste-etablissements.csv'
-DGPR_RUBRIQUES_FILENAME = f'{SECRET_DATA_FOLDER}/AP svelte/sic-liste-rubriques.csv'
+S3IC_INSTALLATIONS_FILENAME = f'{SECRET_DATA_FOLDER}/s3ic-liste-etablissements.csv'
+S3IC_RUBRIQUES_FILENAME = f'{SECRET_DATA_FOLDER}/sic-liste-rubriques.csv'

@@ -6,11 +6,11 @@ from tqdm import tqdm
 
 from envinorma.models import DetailedClassement, DetailedRegime, DetailedClassementState
 from tasks.data_build.load import load_installation_ids
-from tasks.data_build.filenames import DGPR_RUBRIQUES_FILENAME, Dataset, dataset_filename
+from tasks.data_build.filenames import S3IC_RUBRIQUES_FILENAME, Dataset, dataset_filename
 
 
 def _load_deduplicated_classements() -> pd.DataFrame:
-    all_rubriques = pd.read_csv(DGPR_RUBRIQUES_FILENAME, sep=';', dtype='str')
+    all_rubriques = pd.read_csv(S3IC_RUBRIQUES_FILENAME, sep=';', dtype='str')
     return all_rubriques.drop_duplicates()
 
 

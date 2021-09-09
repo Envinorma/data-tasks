@@ -6,11 +6,11 @@ import pandas as pd
 from tqdm import tqdm
 
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
-from tasks.data_build.filenames import DGPR_INSTALLATIONS_FILENAME, Dataset, dataset_filename
+from tasks.data_build.filenames import S3IC_INSTALLATIONS_FILENAME, Dataset, dataset_filename
 
 
 def _load_A_E_installations() -> pd.DataFrame:
-    installations_with_duplicates = pd.read_csv(DGPR_INSTALLATIONS_FILENAME, sep=';', dtype='str')
+    installations_with_duplicates = pd.read_csv(S3IC_INSTALLATIONS_FILENAME, sep=';', dtype='str')
     installations_with_D = installations_with_duplicates.drop_duplicates()
     publishable_regimes = {'A', 'E', 'S', '2'}
     installations_with_duplicated_ids = installations_with_D[

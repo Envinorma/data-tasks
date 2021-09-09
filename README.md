@@ -15,7 +15,7 @@ cd data-tasks
 
 Pour créer les fichiers CSV des classements et installations utilisés par l'application Envinorma, utiliser au choix docker ou python 3.8. Dans les deux cas, cloner le dépôt comme indiqué ci-dessus puis remplacer dans le script les deux variables suivantes :
 
-- Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction DGPR: `AP svelte/s3ic-liste-etablissements.csv` et `AP svelte/sic-liste-rubriques.csv`
+- Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction DGPR: `s3ic-liste-etablissements.csv` et `sic-liste-rubriques.csv`
 
 - Remplacer `$OUTPUT_FOLDER` par le chemin vers le dossier dans lequel générer les fichiers CSV (`installations_all.csv`, `installations_idf.csv`, `installations_sample.csv`, `classements_all.csv`, `classements_idf.csv`, `classements_sample.csv`)
 
