@@ -85,7 +85,7 @@ def _fetch_and_apply_parameters(am_id: str, classements: List[DetailedClassement
     parametrization = DATA_FETCHER.load_or_init_parametrization(am_id)
     parameters = _parameter_dict(classements)
     try:
-        return apply_parameter_values_to_am(am, parametrization, parameters)
+        return apply_parameter_values_to_am(am, parameters, parametrization)
     except ValueError:
         print(parameters)
         print(am_id)
