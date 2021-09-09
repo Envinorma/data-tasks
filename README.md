@@ -87,10 +87,15 @@ Pour ajouter la couche de reconnaissance de caractères sur les AP et les upload
 ```sh
 docker build -t ocr -f ocr.dockerfile .
 docker run -it --rm\
+  -e OS_AUTH_URL="https://auth.cloud.ovh.net/v3/"\
+  -e OS_IDENTITY_API_VERSION=3\
+  -e OS_USER_DOMAIN_NAME=Default\
+  -e OS_PROJECT_DOMAIN_NAME=Default\
   -e OS_TENANT_ID=REPLACE_ME\
   -e OS_TENANT_NAME=REPLACE_ME\
   -e OS_USERNAME=REPLACE_ME\
   -e OS_PASSWORD=REPLACE_ME\
+  -e OS_REGION_NAME=SBG\
   ocr
 ```
 

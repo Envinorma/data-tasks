@@ -56,7 +56,8 @@ def _upload_georisques_ids():
     print('Uploading file IDs to OVH in preparation to OCR.')
     ids = pandas.read_csv(dataset_filename('all', 'aps'))['georisques_id'].tolist()
     with tempfile.NamedTemporaryFile('w') as file_:
-        json.dump(ids, file_)
+        with open(file_.name, 'w') as file_:
+            json.dump(ids, file_)
         OVHClient.upload_document('ap', file_.name, 'georisques_ids.json')
 
 

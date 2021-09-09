@@ -41,9 +41,9 @@ def download_document(url: str, output_filename: str) -> None:
 
 
 def _load_all_georisques_ids() -> List[str]:
-    with tempfile.TemporaryFile('w') as file_:
+    with tempfile.NamedTemporaryFile('w') as file_:
         download_document(_IDS_URL, file_.name)
-        return json.load(file_)
+        return json.load(open(file_.name))
 
 
 def _url(georisques_id: str) -> str:
@@ -179,6 +179,7 @@ def _fetch_already_processed_ids() -> Set[str]:
 def _load_remaining_ids() -> List[str]:
     already_processed_ids = _fetch_already_processed_ids()
     ids_to_process = set(_load_all_georisques_ids())
+    print(f'{len(already_processed_ids)} ids already processed, {len(ids_to_process)} ids to process.')
     return list(ids_to_process - already_processed_ids)
 
 
