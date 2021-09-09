@@ -1,3 +1,5 @@
+import json
+import tempfile
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import pandas
@@ -46,11 +48,20 @@ def dump_aps(dataset: Dataset) -> None:
     print(f'Found {len(aps)} AP for dataset {dataset}.')
     assert len(aps) >= 100, f'Expecting >= 100 aps, got {len(aps)}'
     dataframe = _build_aps_dataframe(aps)
-    print(f'Statuses:\n{dataframe.ocr_status.value_counts()}')
+    print(f'Statuses of OCR:\n{dataframe.ocr_status.value_counts()}', end='\n\n')
     dataframe.to_csv(dataset_filename(dataset, 'aps'), index=False)
+
+
+def _upload_georisques_ids():
+    print('Uploading file IDs to OVH in preparation to OCR.')
+    ids = pandas.read_csv(dataset_filename('all', 'aps'))['georisques_id'].tolist()
+    with tempfile.TemporaryFile('w') as file_:
+        json.dump(ids, file_)
+        OVHClient.upload_document('ap', file_.name, 'georisques_ids.json')
 
 
 def dump_ap_datasets() -> None:
     dump_aps('all')
     dump_aps('idf')
     dump_aps('sample')
+    _upload_georisques_ids()

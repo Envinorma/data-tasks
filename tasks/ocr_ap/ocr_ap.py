@@ -1,4 +1,5 @@
 import argparse
+import json
 import random
 import re
 import shutil
@@ -8,7 +9,6 @@ import traceback
 from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
-import pandas as pd
 import requests
 from ocrmypdf import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
@@ -26,12 +26,8 @@ def typed_tqdm(
 
 
 GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-durable.gouv.fr/commun'
-APS_FILENAME = '/data/seeds/aps_all.csv'
+_IDS_URL = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_3287ea227a904f04ad4e8bceb0776108/ap/georisques_ids.json'
 configure_logging(Verbosity.quiet)
-
-
-def _load_all_georisques_ids() -> List[str]:
-    return pd.read_csv(APS_FILENAME)['georisques_id'].tolist()
 
 
 def download_document(url: str, output_filename: str) -> None:
@@ -42,6 +38,12 @@ def download_document(url: str, output_filename: str) -> None:
             shutil.copyfileobj(req.raw, f)
     else:
         raise ValueError(f'Error when downloading document: {req.content.decode()}')
+
+
+def _load_all_georisques_ids() -> List[str]:
+    with tempfile.TemporaryFile('w') as file_:
+        download_document(_IDS_URL, file_.name)
+        return json.load(file_)
 
 
 def _url(georisques_id: str) -> str:

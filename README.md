@@ -43,11 +43,13 @@ python3 -m tasks.data_build.generate_data --handle-installations-data
 
 ## Mettre à jour les fichiers aps{}.csv à partir de l'extraction géorisques
 
-Pour créer le CSV des aps utilisé par l'application Envinorma, utiliser au choix docker ou python 3.8. Dans les deux cas, cloner le dépôt comme indiqué ci-dessus puis remplacer dans le script les deux variables suivantes :
+Pour créer le CSV des aps utilisé par l'application Envinorma, utiliser au choix docker ou python 3.8. Dans les deux cas, cloner le dépôt comme indiqué ci-dessus puis remplacer dans le script les variables suivantes :
 
 - Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les deux fichiers issus de l'extraction géorisques : `IC_documents.csv` et `IC_types_document.csv`
 
 - Remplacer `$OUTPUT_FOLDER` par le chemin vers le dossier dans lequel générer les fichiers CSV (`aps_all.csv`, `aps_idf.csv`, `aps_sample.csv`). Ce dossier doit contenir les fichiers `installations{}.csv` (cf. paragraphe ci-dessus pour les générer.)
+
+- Remplacer les 4 occurrences de `REPLACE_ME` par les identifiants OVH
 
 ### 1. Avec docker
 
@@ -56,6 +58,10 @@ docker build -t tasks .
 docker run -it --rm\
   -v $INPUT_FOLDER:/data/georisques\
   -v $OUTPUT_FOLDER:/data/seeds\
+  -e OVH_OS_TENANT_ID=REPLACE_ME\
+  -e OVH_OS_TENANT_NAME=REPLACE_ME\
+  -e OVH_OS_USERNAME=REPLACE_ME\
+  -e OVH_OS_PASSWORD=REPLACE_ME\
   tasks\
   python3 -m tasks.data_build.generate_data --handle-aps
 ```
@@ -65,6 +71,7 @@ docker run -it --rm\
 ```sh
 cp default_config.ini config.ini
 # Modifier config.ini pour définir storage.seed_folder=$OUTPUT_FOLDER et storage.georisques_data_folder=$INPUT_FOLDER
+# Modifier aussi les valeurs de OS_TENANT_ID, OS_TENANT_NAME, OS_USERNAME, OS_PASSWORD avec les identifiants OVH
 virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -73,24 +80,17 @@ python3 -m tasks.data_build.generate_data --handle-aps
 
 ## Faire tourner l'OCR sur les APs dont l'OCR n'a pas été exécuté
 
-Pour ajouter la couche de reconnaissance de caractères sur les AP et les uploader sur OVH, installer docker et remplacer dans le script les deux variables suivantes avant de l'exécuter (après avoir cloné le dépôt comme indiqué ci-dessus) :
+Pour ajouter la couche de reconnaissance de caractères sur les AP et les uploader sur OVH, installer docker et remplacer dans la deuxième commande ci-dessous les variables d'environnements (après avoir cloné le dépôt comme indiqué ci-dessus) :
 
-- Remplacer `$INPUT_FOLDER` par le chemin vers le dossier contenant les aps : `aps_all.csv`
-- Remplacer les valeurs des variables d'environnement FILL_WITH_CORRECT_VALUE par les secrets OVH
+- Remplacer les valeurs des variables d'environnement `REPLACE_ME` par les secrets OVH
 
 ```sh
 docker build -t ocr -f ocr.dockerfile .
 docker run -it --rm\
-  -e OS_AUTH_URL="https://auth.cloud.ovh.net/v3/"\
-  -e OS_IDENTITY_API_VERSION=3\
-  -e OS_USER_DOMAIN_NAME=Default\
-  -e OS_PROJECT_DOMAIN_NAME=Default\
-  -e OS_TENANT_ID=FILL_WITH_CORRECT_VALUE\
-  -e OS_TENANT_NAME=FILL_WITH_CORRECT_VALUE\
-  -e OS_USERNAME=FILL_WITH_CORRECT_VALUE\
-  -e OS_PASSWORD=FILL_WITH_CORRECT_VALUE\
-  -e OS_REGION_NAME=SBG\
-  -v /data/seeds=$INPUT\
+  -e OS_TENANT_ID=REPLACE_ME\
+  -e OS_TENANT_NAME=REPLACE_ME\
+  -e OS_USERNAME=REPLACE_ME\
+  -e OS_PASSWORD=REPLACE_ME\
   ocr
 ```
 

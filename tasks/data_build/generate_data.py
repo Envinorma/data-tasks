@@ -65,6 +65,7 @@ def run(
         _handle_installations_data()
     if handle_aps:
         _build_aps_from_georisques()
+    print('✅ Operation is successful')
 
 
 def cli():
