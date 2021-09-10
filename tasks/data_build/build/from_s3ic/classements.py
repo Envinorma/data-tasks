@@ -85,7 +85,8 @@ def _build_csv() -> pd.DataFrame:
 def build_classements_csv() -> None:
     classements = _build_csv()
     _check_classements(classements)
-    classements.to_csv(dataset_filename('all', 'classements'), index=False)
+    keys = ['s3ic_id', 'date_autorisation', 'date_mise_en_service', 'regime', 'rubrique', 'alinea']
+    classements.sort_values(keys).to_csv(dataset_filename('all', 'classements'), index=False)
     print(f'classements dataset all has {classements.shape[0]} rows')
 
 
