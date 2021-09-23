@@ -5,10 +5,11 @@ def _set_environment_variables() -> None:
 
 _set_environment_variables()
 
-from prefect import Flow, task  # noqa: E402
-from prefect.agent.local import LocalAgent  # noqa: E402
-from prefect.executors import LocalExecutor  # noqa: E402
-from prefect.schedules import CronSchedule  # noqa: E402
+from prefect.core import task  # noqa: E402
+from prefect.core.flow import Flow  # noqa: E402
+from prefect.agent.local.agent import LocalAgent  # noqa: E402
+from prefect.executors.local import LocalExecutor  # noqa: E402
+from prefect.schedules.schedules import CronSchedule  # noqa: E402
 
 from .am_diffs.compute_am_diffs import compute_and_dispatch_diff  # noqa: E402
 from .backup_bo_database import backup_bo_database  # noqa: E402
@@ -21,7 +22,7 @@ def compute_and_dispatch_diff_task() -> None:
 
 
 def compute_and_dispatch_diff_flow() -> Flow:
-    flow = Flow('compute-and-dispatch-diff', tasks=[compute_and_dispatch_diff_task], executor=LocalExecutor())
+    flow = Flow('compute-and-dispatch-diff', tasks=[compute_and_dispatch_diff_task], executor=LocalExecutor())  # type: ignore
     flow.schedule = CronSchedule('0 2 * * 0')  # Every sunday at 2 am
     return flow
 
@@ -32,7 +33,7 @@ def load_ams_in_ovh_task() -> None:
 
 
 def load_ams_in_ovh_flow() -> Flow:
-    flow = Flow('load-am-in-ovh', tasks=[load_ams_in_ovh_task], executor=LocalExecutor())
+    flow = Flow('load-am-in-ovh', tasks=[load_ams_in_ovh_task], executor=LocalExecutor())  # type: ignore
     flow.schedule = CronSchedule('0 1 * * 0')  # Every sunday at 1 am
     return flow
 
@@ -43,7 +44,7 @@ def backup_bo_database_task() -> None:
 
 
 def backup_bo_database_flow() -> Flow:
-    flow = Flow('backup-bo-database', tasks=[backup_bo_database_task], executor=LocalExecutor())
+    flow = Flow('backup-bo-database', tasks=[backup_bo_database_task], executor=LocalExecutor())  # type: ignore
     flow.schedule = CronSchedule('0 0 * * 0')  # Every sunday at 0 am
     return flow
 

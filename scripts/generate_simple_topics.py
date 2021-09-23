@@ -28,10 +28,10 @@ def _add_simple_topics():
 def _add_simple_topics_in_am_db():
     am_metadata = DATA_FETCHER.load_all_am_metadata(False)
     for am_md in typed_tqdm(am_metadata.values(), 'Adding topics to AM.'):
-        am = DATA_FETCHER.load_most_advanced_am(am_md.cid)
+        am = DATA_FETCHER.load_am(am_md.cid)
         if not am:
             continue
-        DATA_FETCHER.upsert_structured_am(am_md.cid, add_simple_topics(am))
+        DATA_FETCHER.upsert_am(am_md.cid, add_simple_topics(am))
 
 
 if __name__ == '__main__':

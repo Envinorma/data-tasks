@@ -21,7 +21,7 @@ def _create_if_inexistent(folder: str):
 def _write_ams(ams: List[ArreteMinisteriel]) -> None:
     for am in typed_tqdm(ams, 'Writing AMs'):
         full_path = os.path.join(ENRICHED_OUTPUT_FOLDER, am.id or '') + '.json'
-        write_json(am.to_dict(), full_path)
+        write_json(am.to_dict(), full_path, indent=2)
 
 
 def generate_ams() -> None:

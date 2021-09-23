@@ -102,5 +102,5 @@ def load_ams(ids: Optional[Set[str]] = None) -> Dict[str, ArreteMinisteriel]:
     """
     logging.info('loading AM.')
     ids = ids or set(list(DATA_FETCHER.load_all_am_metadata().keys()))
-    ams = DATA_FETCHER.load_id_to_most_advanced_am(ids)
+    ams = DATA_FETCHER.load_id_to_am(ids)
     return {id_: ensure_not_none(ams.get(id_)) for id_ in ids}

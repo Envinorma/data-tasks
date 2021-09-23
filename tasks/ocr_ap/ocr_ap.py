@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
 import requests
-from ocrmypdf import Verbosity, configure_logging, ocr
+from ocrmypdf.api import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
 from tqdm import tqdm
 

@@ -52,7 +52,7 @@ def _seems_too_big(diff: TextDifferences) -> bool:
 
 
 def _am_has_changed(am_id: str) -> Tuple[bool, Optional[TextDifferences]]:
-    envinorma_version = DATA_FETCHER.load_initial_am(am_id)
+    envinorma_version = DATA_FETCHER.load_am(am_id)
     if not envinorma_version:
         return False, None
     legifrance_version = _load_legifrance_version(am_id)
@@ -104,15 +104,6 @@ def run() -> None:
     for am_id, diff in changed.items():
         print(am_id)
         _pretty_print_diff(diff)
-
-
-def _dump_before_after(am_id: str):
-    envinorma_version = DATA_FETCHER.load_initial_am(am_id)
-    if not envinorma_version:
-        return
-    legifrance_version = _load_legifrance_version(am_id)
-    open('tmp_before.txt', 'w').write('\n'.join(_extract_lines(envinorma_version)))
-    open('tmp_after.txt', 'w').write('\n'.join(_extract_lines(legifrance_version)))
 
 
 if __name__ == '__main__':

@@ -81,7 +81,7 @@ def _parameter_dict(classements: List[DetailedClassement]) -> Dict[Parameter, An
 
 
 def _fetch_and_apply_parameters(am_id: str, classements: List[DetailedClassement]) -> ArreteMinisteriel:
-    am = DATA_FETCHER.safe_load_most_advanced_am(am_id)
+    am = DATA_FETCHER.safe_load_am(am_id)
     parametrization = DATA_FETCHER.load_or_init_parametrization(am_id)
     parameters = _parameter_dict(classements)
     try:
