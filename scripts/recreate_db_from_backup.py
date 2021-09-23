@@ -16,8 +16,6 @@ _CONNECTION = psycopg2.connect(DATA_FETCHER.psql_dsn)
 
 def _drop_tables():
     commands = (
-        """DROP TABLE IF EXISTS am_status""",
-        """DROP TABLE IF EXISTS initial_am""",
         """DROP TABLE IF EXISTS structured_am""",
         """DROP TABLE IF EXISTS parametrization""",
         """DROP TABLE IF EXISTS am_metadata""",
