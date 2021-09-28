@@ -1,9 +1,17 @@
+import tempfile
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Literal
+from typing import Any, Callable, Dict, Iterable, List, Literal, TypeVar
 
 from swiftclient.service import SwiftService, SwiftUploadObject
 
-BucketName = Literal['ap', 'am']
+from tasks.common import download_document
+
+BucketName = Literal['ap', 'am', 'misc']
+_BASE_BUCKET_URL = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_3287ea227a904f04ad4e8bceb0776108/{}'
+
+
+def bucket_url(bucket: BucketName) -> str:
+    return _BASE_BUCKET_URL.format(bucket)
 
 
 def _check_upload(results: List[Dict]) -> None:
@@ -28,6 +36,22 @@ def _get_swift_service() -> SwiftService:
     service = SwiftService()
     _check_auth(service)
     return service
+
+
+def dump_in_ovh(object_name: str, bucket: BucketName, dumper: Callable[[str], None]) -> None:
+    with tempfile.NamedTemporaryFile('w') as file_:
+        dumper(file_.name)
+        OVHClient.upload_document(bucket, file_.name, object_name)
+
+
+T = TypeVar('T')
+
+
+def load_from_ovh(obect_name: str, bucket: BucketName, loader: Callable[[str], T]) -> T:
+    with tempfile.NamedTemporaryFile('w') as file_:
+        url = bucket_url(bucket) + '/' + obect_name
+        download_document(url, file_.name)
+        return loader(file_.name)
 
 
 class OVHClient:

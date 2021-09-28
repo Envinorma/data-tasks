@@ -1,4 +1,6 @@
 from datetime import date
+from tasks.common.ovh import dump_in_ovh
+from tasks.data_build.load import load_installations_csv
 from typing import Any, Dict, cast
 
 import pandas as pd
@@ -6,7 +8,7 @@ from envinorma.models import Regime
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tqdm import tqdm
 
-from tasks.data_build.filenames import S3IC_INSTALLATIONS_FILENAME, Dataset, dataset_filename
+from tasks.data_build.filenames import S3IC_INSTALLATIONS_FILENAME, Dataset, dataset_object_name
 
 
 def _load_A_E_installations() -> pd.DataFrame:
@@ -97,12 +99,9 @@ def build_installations_csv() -> None:
     final_active_installations = final_installations[
         final_installations.active == ActivityStatus.EN_FONCTIONNEMENT.value
     ]
-    final_active_installations.to_csv(dataset_filename('all', 'installations'), index=False)
+    name = dataset_object_name('all', 'installations')
+    dump_in_ovh(name, 'misc', lambda filename: final_active_installations.to_csv(filename, index=False))
     print(f'Dumped {final_active_installations.shape[0]} active installations.')
-
-
-def load_installations_csv(dataset: Dataset) -> pd.DataFrame:
-    return pd.read_csv(dataset_filename(dataset, 'installations'), dtype='str')
 
 
 def _select(s3ic_id: str) -> bool:
@@ -119,7 +118,8 @@ def _filter_and_dump(all_installations: pd.DataFrame, dataset: Dataset) -> None:
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 installations, got {nb_rows}'
     print(f'Installation dataset {dataset} has {nb_rows} rows')
-    filtered_df.to_csv(dataset_filename(dataset, 'installations'), index=False)
+    name = dataset_object_name(dataset, 'installations')
+    dump_in_ovh(name, 'misc', lambda filename: filtered_df.to_csv(filename, index=False))
 
 
 def build_all_installations_datasets() -> None:

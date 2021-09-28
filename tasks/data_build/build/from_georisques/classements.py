@@ -1,13 +1,10 @@
+from tasks.common.ovh import dump_in_ovh
 import pandas as pd
 from tqdm import tqdm
 
-from envinorma.models import DetailedClassement, DetailedRegime
-from tasks.data_build.load import load_installation_ids
-from tasks.data_build.filenames import Dataset, dataset_filename
-
-
-def _simplify_regime(regime: str) -> str:
-    return DetailedRegime(regime).to_simple_regime()
+from envinorma.models import DetailedClassement
+from tasks.data_build.load import load_classements_csv, load_installation_ids
+from tasks.data_build.filenames import Dataset, dataset_object_name
 
 
 def _check_classements(classements: pd.DataFrame) -> None:
@@ -28,12 +25,9 @@ def build_all_classements() -> None:
 def build_classements_csv() -> None:
     classements = _build_csv()
     _check_classements(classements)
-    classements.to_csv(dataset_filename('all', 'classements'), index=False)
+    name = dataset_object_name('all', 'classements')
+    dump_in_ovh(name, 'misc', lambda filename: classements.to_csv(filename, index=False))
     print(f'classements dataset all has {classements.shape[0]} rows')
-
-
-def load_classements_csv(dataset: Dataset) -> pd.DataFrame:
-    return pd.read_csv(dataset_filename(dataset, 'classements'), dtype='str')
 
 
 def _filter_and_dump(all_classements: pd.DataFrame, dataset: Dataset) -> None:
@@ -41,7 +35,8 @@ def _filter_and_dump(all_classements: pd.DataFrame, dataset: Dataset) -> None:
     filtered_df = all_classements[all_classements.s3ic_id.apply(lambda x: x in installation_ids)]
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 classements, got {nb_rows}'
-    filtered_df.to_csv(dataset_filename(dataset, 'classements'), index=False)
+    name = dataset_object_name(dataset, 'classements')
+    dump_in_ovh(name, 'misc', lambda filename: filtered_df.to_csv(filename, index=False))
     print(f'classements dataset {dataset} has {nb_rows} rows')
 
 

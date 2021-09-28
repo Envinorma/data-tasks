@@ -7,6 +7,7 @@ LEGIFRANCE_CLIENT_ID = get_config_variable('legifrance', 'client_id')
 SEED_FOLDER = get_config_variable('storage', 'seed_folder')
 SECRET_DATA_FOLDER = get_config_variable('storage', 'secret_data_folder')
 GEORISQUES_DATA_FOLDER = get_config_variable('storage', 'georisques_data_folder')
+GEORISQUES_DUMP_URL = get_config_variable('georisques', 'data_url')
 AM_REPOSITORY_FOLDER = get_config_variable('storage', 'am_repository_folder')
 AM_SLACK_URL = get_config_variable('slack', 'am_channel')
 DATABASE_NAME = DATA_FETCHER.psql_dsn.split('/')[-1]

@@ -1,12 +1,13 @@
 import json
 import os
+from tasks.common.ovh import dump_in_ovh
 from typing import Dict, List
 
 import requests
 from envinorma.models.document import Document
 from envinorma.utils import batch, typed_tqdm, write_json
 
-from tasks.data_build.filenames import GEORISQUES_URL, Dataset, dataset_filename
+from tasks.data_build.filenames import GEORISQUES_URL, Dataset, dataset_object_name
 from tasks.data_build.load import load_documents_from_csv, load_installation_ids
 
 
@@ -67,13 +68,15 @@ def download_georisques_documents(dataset: Dataset = 'all') -> None:
     filenames = [f'{folder}/{batch_id}.json' for batch_id in range(len(batches))]
     for filename, batch_ in typed_tqdm(list(zip(filenames, batches)), 'Downloading document batches'):
         _download_if_inexistent(filename, batch_)
-    _combine_and_dump(filenames, dataset_filename(dataset, 'documents', 'json'))
+    name = dataset_object_name(dataset, 'documents', 'json')
+    dump_in_ovh(name, 'misc', lambda filename: _combine_and_dump(filenames, filename))
 
 
 def _filter_and_dump(all_documents: List[Document], dataset: Dataset) -> None:
     doc_ids = load_installation_ids(dataset)
     docs = [doc for doc in all_documents if doc.s3ic_id in doc_ids]
-    _dump_docs(docs, dataset_filename(dataset, 'documents', 'json'))
+    name = dataset_object_name(dataset, 'documents', 'json')
+    dump_in_ovh(name, 'misc', lambda filename: _dump_docs(docs, filename))
     print(f'documents dataset {dataset} has {len(docs)} rows')
     assert len(docs) >= 100, f'Expecting >= 100 docs, got {len(docs)}'
 

@@ -20,6 +20,7 @@ from tasks.data_build.validate.check_am import check_ams  # noqa: E402
 from tasks.data_build.validate.check_classements import check_classements_csv  # noqa: E402
 from tasks.data_build.validate.check_documents import check_documents_csv  # noqa: E402
 from tasks.data_build.validate.check_installations import check_installations_csv  # noqa: E402
+from tasks.ocr_ap.ocr_ap import run as run_ocr  # noqa: E402
 
 
 def _build_aps_from_georisques():
@@ -53,11 +54,16 @@ def _handle_ams(with_repository: bool) -> None:
     check_ams()
 
 
+def _handle_ocr() -> None:
+    run_ocr(False, False)
+
+
 def run(
     with_repository: bool = False,
     handle_ams: bool = False,
     handle_installations_data: bool = False,
     handle_aps: bool = False,
+    handle_ocr: bool = False,
 ) -> None:
     if handle_ams:
         _handle_ams(with_repository)
@@ -65,6 +71,8 @@ def run(
         _handle_installations_data()
     if handle_aps:
         _build_aps_from_georisques()
+    if handle_ocr:
+        _handle_ocr()
     print('✅ Operation is successful')
 
 
@@ -74,9 +82,10 @@ def cli():
     parser.add_argument('--handle-ams', action='store_true', help='Generate AMs')
     parser.add_argument('--handle-installations-data', action='store_true', help='Generate installation data')
     parser.add_argument('--handle-aps', action='store_true', help='Generate APs')
+    parser.add_argument('--handle-ocr', action='store_true', help='Perform OCR')
     args = parser.parse_args()
 
-    run(args.with_repository, args.handle_ams, args.handle_installations_data, args.handle_aps)
+    run(args.with_repository, args.handle_ams, args.handle_installations_data, args.handle_aps, args.handle_ocr)
 
 
 if __name__ == '__main__':

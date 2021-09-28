@@ -2,6 +2,7 @@
 import os
 from dataclasses import fields
 from pathlib import Path
+from tasks.common.ovh import dump_in_ovh
 from typing import Dict, Optional, Tuple, Union
 
 import pandas as pd
@@ -9,7 +10,7 @@ from envinorma.models import Regime
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 
 from tasks.data_build.config import GEORISQUES_DATA_FOLDER
-from tasks.data_build.filenames import Dataset, dataset_filename
+from tasks.data_build.filenames import Dataset, dataset_object_name
 from tasks.data_build.load import load_installations_csv
 
 _COLS = [
@@ -132,7 +133,10 @@ def _convert_to_envinorma_installations(installations: pd.DataFrame) -> pd.DataF
 def build_all_installations() -> None:
     georisques_installations = _load_georisques_installations()
     envinorma_installations = _convert_to_envinorma_installations(georisques_installations)
-    envinorma_installations.sort_values(by='s3ic_id').to_csv(dataset_filename('all', 'installations'), index=False)
+    name = dataset_object_name('all', 'installations')
+    dump_in_ovh(
+        name, 'misc', lambda filename: envinorma_installations.sort_values(by='s3ic_id').to_csv(filename, index=False)
+    )
     print(f'Dumped {envinorma_installations.shape[0]} installations.')
 
 
@@ -150,7 +154,8 @@ def _filter_and_dump(all_installations: pd.DataFrame, dataset: Dataset) -> None:
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 installations, got {nb_rows}'
     print(f'Installation dataset {dataset} has {nb_rows} rows')
-    filtered_df.to_csv(dataset_filename(dataset, 'installations'), index=False)
+    name = dataset_object_name(dataset, 'installations')
+    dump_in_ovh(name, 'misc', lambda filename: filtered_df.to_csv(filename, index=False))
 
 
 def build_all_installations_datasets() -> None:

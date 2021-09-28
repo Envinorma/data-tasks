@@ -1,15 +1,26 @@
+import tarfile
 import os
 from dataclasses import fields
+from typing import cast
 
 import pandas as pd
 from envinorma.models.document import Document
 
-from tasks.data_build.config import GEORISQUES_DATA_FOLDER
-from tasks.data_build.filenames import Dataset, dataset_filename
+from tasks.common.ovh import dump_in_ovh
+from tasks.common import download_document
+from tasks.data_build.config import GEORISQUES_DATA_FOLDER, GEORISQUES_DUMP_URL
+from tasks.data_build.filenames import Dataset, dataset_object_name
 from tasks.data_build.load import load_documents_csv, load_installation_ids
 
-
 _COLS = ['id_document', 'code_s3ic', 'type_id_document', 'nom', 'url_document', 'date_document']
+
+
+def _download_and_extract_zip() -> None:
+    print('Downloading Georisques zip file...')
+    zip_file = os.path.join(GEORISQUES_DATA_FOLDER, 'georisques_data.tar.gz')
+    download_document(GEORISQUES_DUMP_URL, zip_file)
+    with tarfile.open(zip_file, 'r:gz') as zip_ref:
+        zip_ref.extractall(GEORISQUES_DATA_FOLDER)
 
 
 def _load_georisques_documents() -> pd.DataFrame:
@@ -36,18 +47,26 @@ def _convert_to_envinorma_format(georisques_documents: pd.DataFrame) -> pd.DataF
 
 
 def build_all_documents() -> None:
+    _download_and_extract_zip()
     georisques_documents = _load_georisques_documents()
     envinorma_documents = _convert_to_envinorma_format(georisques_documents)
-    envinorma_documents.sort_values(by='s3ic_id').to_csv(dataset_filename('all', 'documents'), index=False)
+    sorted_documents = envinorma_documents.sort_values(by='s3ic_id')
+    dump_in_ovh(
+        dataset_object_name('all', 'documents'), 'misc', lambda filename: sorted_documents.to_csv(filename, index=False)
+    )
     print(f'Dumped {envinorma_documents.shape[0]} documents.')
 
 
 def _filter_and_dump(all_documents: pd.DataFrame, dataset: Dataset) -> None:
     doc_ids = load_installation_ids(dataset)
-    filtered_documents = all_documents[all_documents.s3ic_id.apply(lambda x: x in doc_ids)]
+    filtered_documents = cast(pd.DataFrame, all_documents[all_documents.s3ic_id.apply(lambda x: x in doc_ids)])
     sort_keys = ['s3ic_id', 'date', 'url']
-    sorted_documents = filtered_documents.sort_values(by=sort_keys, ascending=[True, False, True])  # type: ignore
-    sorted_documents.to_csv(dataset_filename(dataset, 'documents'), index=False)
+    sorted_documents = filtered_documents.sort_values(by=sort_keys, ascending=[True, False, True])
+    dump_in_ovh(
+        dataset_object_name(dataset, 'documents'),
+        'misc',
+        lambda filename: sorted_documents.to_csv(filename, index=False),
+    )
     print(f'documents dataset {dataset} has {len(sorted_documents)} rows')
     assert len(sorted_documents) >= 100, f'Expecting >= 100 docs, got {len(sorted_documents)}'
 

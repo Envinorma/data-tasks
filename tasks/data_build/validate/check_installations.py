@@ -6,7 +6,9 @@ from envinorma.models import Regime
 from envinorma.models.installation import ActivityStatus, Installation, InstallationFamily, Seveso
 from tqdm import tqdm
 
-from ..filenames import dataset_filename
+from tasks.common.ovh import load_from_ovh
+
+from ..filenames import dataset_object_name
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
@@ -18,7 +20,10 @@ def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
     return Installation(**record)
 
 
-def check_installations_csv(filename: str = dataset_filename('all', 'installations')) -> None:
-    dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
+def check_installations_csv() -> None:
+    name = dataset_object_name('all', 'installations')
+    dataframe = load_from_ovh(
+        name, 'misc', lambda filename: pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
+    )
     for record in tqdm(dataframe.to_dict(orient='records'), 'Checking installations csv'):
         _dataframe_record_to_installation(cast(Dict, record))

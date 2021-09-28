@@ -9,8 +9,8 @@ DataType = Literal['classements', 'installations', 'documents', 'aps']
 Extension = Literal['csv', 'json']
 
 
-def dataset_filename(dataset: Dataset, datatype: DataType, extension: Extension = 'csv') -> str:
-    return os.path.join(SEED_FOLDER, f'{datatype}_{dataset}.{extension}')
+def dataset_object_name(dataset: Dataset, datatype: DataType, extension: Extension = 'csv') -> str:
+    return f'{datatype}_{dataset}.{extension}'
 
 
 GEORISQUES_URL = 'https://www.georisques.gouv.fr/webappReport/ws'

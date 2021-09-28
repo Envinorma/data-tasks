@@ -1,12 +1,13 @@
 from datetime import date
+from tasks.common.ovh import dump_in_ovh
 from typing import Any, Set, cast
 
 import pandas as pd
 from tqdm import tqdm
 
 from envinorma.models import DetailedClassement, DetailedRegime, DetailedClassementState
-from tasks.data_build.load import load_installation_ids
-from tasks.data_build.filenames import S3IC_RUBRIQUES_FILENAME, Dataset, dataset_filename
+from tasks.data_build.load import load_classements_csv, load_installation_ids
+from tasks.data_build.filenames import S3IC_RUBRIQUES_FILENAME, Dataset, dataset_object_name
 
 
 def _load_deduplicated_classements() -> pd.DataFrame:
@@ -86,12 +87,9 @@ def build_classements_csv() -> None:
     classements = _build_csv()
     _check_classements(classements)
     keys = ['s3ic_id', 'date_autorisation', 'date_mise_en_service', 'regime', 'rubrique', 'alinea']
-    classements.sort_values(keys).to_csv(dataset_filename('all', 'classements'), index=False)
+    name = dataset_object_name('all', 'classements')
+    dump_in_ovh(name, 'misc', lambda filename: classements.sort_values(keys).to_csv(filename, index=False))
     print(f'classements dataset all has {classements.shape[0]} rows')
-
-
-def load_classements_csv(dataset: Dataset) -> pd.DataFrame:
-    return pd.read_csv(dataset_filename(dataset, 'classements'), dtype='str')
 
 
 def _filter_and_dump(all_classements: pd.DataFrame, dataset: Dataset) -> None:
@@ -99,7 +97,8 @@ def _filter_and_dump(all_classements: pd.DataFrame, dataset: Dataset) -> None:
     filtered_df = all_classements[all_classements.s3ic_id.apply(lambda x: x in installation_ids)]
     nb_rows = filtered_df.shape[0]
     assert nb_rows >= 1000, f'Expecting >= 1000 classements, got {nb_rows}'
-    filtered_df.to_csv(dataset_filename(dataset, 'classements'), index=False)
+    name = dataset_object_name(dataset, 'classements')
+    dump_in_ovh(name, 'misc', lambda filename: filtered_df.to_csv(filename, index=False))
     print(f'classements dataset {dataset} has {nb_rows} rows')
 
 

@@ -2,19 +2,18 @@ import argparse
 import json
 import random
 import re
-import shutil
 import tempfile
 import time
 import traceback
 from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 
-import requests
 from ocrmypdf.api import Verbosity, configure_logging, ocr
 from ocrmypdf.exceptions import PriorOcrFoundError
 from tqdm import tqdm
 
-from tasks.common.ovh import OVHClient
+from tasks.common import download_document
+from tasks.common.ovh import OVHClient, load_from_ovh
 
 T = TypeVar('T')
 
@@ -26,24 +25,11 @@ def typed_tqdm(
 
 
 GEORISQUES_DOWNLOAD_URL = 'http://documents.installationsclassees.developpement-durable.gouv.fr/commun'
-_IDS_URL = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_3287ea227a904f04ad4e8bceb0776108/ap/georisques_ids.json'
 configure_logging(Verbosity.quiet)
 
 
-def download_document(url: str, output_filename: str) -> None:
-    req = requests.get(url, stream=True)
-    if req.status_code == 200:
-        with open(output_filename, 'wb') as f:
-            req.raw.decode_content = True
-            shutil.copyfileobj(req.raw, f)
-    else:
-        raise ValueError(f'Error when downloading document: {req.content.decode()}')
-
-
 def _load_all_georisques_ids() -> List[str]:
-    with tempfile.NamedTemporaryFile('w') as file_:
-        download_document(_IDS_URL, file_.name)
-        return json.load(open(file_.name))
+    return load_from_ovh('georisques_ids.json', 'misc', lambda x: json.load(open(x)))
 
 
 def _url(georisques_id: str) -> str:
@@ -199,7 +185,7 @@ def _run_ocr(force_redo_ocr: bool) -> None:
             print(f'Error when processing {id_}:\n{error}')
 
 
-def _run(compute_advancement: bool = False, force_redo_ocr: bool = False) -> None:
+def run(compute_advancement: bool = False, force_redo_ocr: bool = False) -> None:
     if compute_advancement:
         _run_compute_advancement()
     else:
@@ -218,7 +204,7 @@ def cli() -> None:
         required=False,
     )
     args = parser.parse_args()
-    _run(compute_advancement=args.compute_advancement, force_redo_ocr=args.force_redo_ocr)
+    run(compute_advancement=args.compute_advancement, force_redo_ocr=args.force_redo_ocr)
 
 
 if __name__ == '__main__':

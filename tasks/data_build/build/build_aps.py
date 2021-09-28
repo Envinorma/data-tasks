@@ -1,12 +1,11 @@
 import json
-import tempfile
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 
 import pandas
 from envinorma.models.document import Document, DocumentType
 
-from tasks.common.ovh import OVHClient
-from tasks.data_build.filenames import Dataset, dataset_filename
+from tasks.common.ovh import OVHClient, dump_in_ovh, load_from_ovh
+from tasks.data_build.filenames import Dataset, dataset_object_name
 from tasks.data_build.load import load_documents_from_csv
 
 OCRStatus = Literal['ERROR', 'SUCCESS', 'NOT_ATTEMPTED']
@@ -43,22 +42,42 @@ def _fetch_ap_status_and_size(ap_ids: List[str]) -> Dict[str, Tuple[OCRStatus, O
     return {ap_id: _deduce_status_and_size(pdfs.get(ap_id), ap_id in errors) for ap_id in ap_ids}
 
 
+def _ap_dumper(dataframe: pandas.DataFrame) -> Callable[[str], None]:
+    def _dump(filename: str) -> None:
+        dataframe.to_csv(filename, index=False)
+
+    return _dump
+
+
 def dump_aps(dataset: Dataset) -> None:
     aps = [doc for doc in load_documents_from_csv(dataset) if doc.type == DocumentType.AP]
     print(f'Found {len(aps)} AP for dataset {dataset}.')
     assert len(aps) >= 100, f'Expecting >= 100 aps, got {len(aps)}'
     dataframe = _build_aps_dataframe(aps)
     print(f'Statuses of OCR:\n{dataframe.ocr_status.value_counts()}', end='\n\n')
-    dataframe.to_csv(dataset_filename(dataset, 'aps'), index=False)
+    dump_in_ovh(dataset_object_name(dataset, 'aps'), 'misc', _ap_dumper(dataframe))
+
+
+def _ap_loader(filename: str) -> pandas.DataFrame:
+    return pandas.read_csv(filename)
+
+
+def _load_dataset(dataset: Dataset) -> pandas.DataFrame:
+    return load_from_ovh(dataset_object_name(dataset, 'aps'), 'misc', _ap_loader)
+
+
+def _ids_dumper(ids: List[str]) -> Callable[[str], None]:
+    def _dump(filename: str) -> None:
+        with open(filename, 'w') as file_:
+            json.dump(ids, file_)
+
+    return _dump
 
 
 def _upload_georisques_ids():
     print('Uploading file IDs to OVH in preparation to OCR.')
-    ids = pandas.read_csv(dataset_filename('all', 'aps'))['georisques_id'].tolist()
-    with tempfile.NamedTemporaryFile('w') as file_:
-        with open(file_.name, 'w') as file_:
-            json.dump(ids, file_)
-        OVHClient.upload_document('ap', file_.name, 'georisques_ids.json')
+    ids = _load_dataset('all')['georisques_id'].tolist()
+    dump_in_ovh('georisques_ids.json', 'misc', _ids_dumper(ids))
 
 
 def dump_ap_datasets() -> None:

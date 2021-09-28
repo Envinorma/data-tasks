@@ -6,8 +6,10 @@ from typing import Any, Dict, List, Set
 import pandas
 from tqdm import tqdm
 
+from tasks.common.ovh import load_from_ovh
+
 from ..build.build_aps import OCRStatus
-from ..filenames import dataset_filename
+from ..filenames import dataset_object_name
 from ..load import load_installations_csv
 
 _DIGITS = set('0123456789')
@@ -73,7 +75,7 @@ def _check_output(dataframe: pandas.DataFrame, installations_ids: Set[str]) -> N
 
 
 def check_documents_csv() -> None:
-    filename: str = dataset_filename('all', 'aps')
     installations_ids = set(load_installations_csv('all')['s3ic_id'].to_list())
-    dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
-    _check_output(dataframe, installations_ids)
+    name = dataset_object_name('all', 'aps')
+    dataframe = load_from_ovh(name, 'misc', lambda filename: pandas.read_csv(filename, dtype='str', na_values=None))
+    _check_output(dataframe.fillna(''), installations_ids)

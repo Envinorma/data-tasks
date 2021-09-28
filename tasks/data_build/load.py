@@ -12,16 +12,25 @@ from envinorma.models.installation import ActivityStatus, Installation, Installa
 from envinorma.utils import ensure_not_none
 
 from tasks.common.config import DATA_FETCHER
-from tasks.data_build.filenames import Dataset, dataset_filename
+from tasks.common.ovh import load_from_ovh
+from tasks.data_build.filenames import Dataset, dataset_object_name
 from tasks.data_build.utils import typed_tqdm
 
 
+def _load_csv(filename: str) -> pd.DataFrame:
+    return pd.read_csv(filename, dtype='str')
+
+
 def load_installations_csv(dataset: Dataset) -> pd.DataFrame:
-    return pd.read_csv(dataset_filename(dataset, 'installations'), dtype='str')
+    return load_from_ovh(dataset_object_name(dataset, 'installations'), 'misc', _load_csv)
 
 
 def load_documents_csv(dataset: Dataset) -> pd.DataFrame:
-    return pd.read_csv(dataset_filename(dataset, 'documents'), dtype='str')
+    return load_from_ovh(dataset_object_name(dataset, 'documents'), 'misc', _load_csv)
+
+
+def load_classements_csv(dataset: Dataset) -> pd.DataFrame:
+    return load_from_ovh(dataset_object_name(dataset, 'classements'), 'misc', _load_csv)
 
 
 def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
@@ -33,13 +42,16 @@ def _dataframe_record_to_installation(record: Dict[str, Any]) -> Installation:
     return Installation(**record)
 
 
-def load_installations(dataset: Dataset) -> List[Installation]:
-    filename = dataset_filename(dataset, 'installations')
+def _load_installations(filename: str) -> List[Installation]:
     dataframe = pandas.read_csv(filename, dtype='str', na_values=None).fillna('')
     return [
         _dataframe_record_to_installation(cast(Dict, record))
         for record in typed_tqdm(dataframe.to_dict(orient='records'), 'Loading installations', leave=False)
     ]
+
+
+def load_installations(dataset: Dataset) -> List[Installation]:
+    return load_from_ovh(dataset_object_name(dataset, 'installations'), 'misc', _load_installations)
 
 
 def load_installation_ids(dataset: Dataset = 'all') -> Set[str]:
@@ -50,8 +62,7 @@ def _dataframe_record_to_classement(record: Dict[str, Any]) -> DetailedClassemen
     return DetailedClassement(**record)
 
 
-def load_classements(dataset: Dataset) -> List[DetailedClassement]:
-    filename = dataset_filename(dataset, 'classements')
+def _load_classements(filename: str) -> List[DetailedClassement]:
     dataframe_with_nan = pandas.read_csv(filename, dtype='str', na_values=None)
     dataframe = dataframe_with_nan.where(pandas.notnull(dataframe_with_nan), None)
     dataframe['volume'] = dataframe.volume.apply(lambda x: x or '')
@@ -61,11 +72,16 @@ def load_classements(dataset: Dataset) -> List[DetailedClassement]:
     ]
 
 
+def load_classements(dataset: Dataset) -> List[DetailedClassement]:
+    return load_from_ovh(dataset_object_name(dataset, 'classements'), 'misc', _load_classements)
+
+
+def _load_documents(filename: str) -> List[Document]:
+    return [Document.from_dict(doc) for doc in pd.read_csv(filename, dtype='str').fillna('').to_dict(orient='records')]
+
+
 def load_documents_from_csv(dataset: Dataset) -> List[Document]:
-    return [
-        Document.from_dict(doc)
-        for doc in pd.read_csv(dataset_filename(dataset, 'documents'), dtype='str').fillna('').to_dict(orient='records')
-    ]
+    return load_from_ovh(dataset_object_name(dataset, 'documents'), 'misc', _load_documents)
 
 
 def _dataframe_record_to_ap(record: Dict[str, Any]) -> Document:
@@ -79,12 +95,16 @@ def _dataframe_record_to_ap(record: Dict[str, Any]) -> Document:
     return Document.from_dict(record)
 
 
-def load_aps(dataset: Dataset) -> List[Document]:
-    dataframe = pandas.read_csv(dataset_filename(dataset, 'aps'), dtype='str')
+def _load_aps(filename: str) -> List[Document]:
+    dataframe = pandas.read_csv(filename, dtype='str')
     return [
         _dataframe_record_to_ap(record)
         for record in typed_tqdm(dataframe.to_dict(orient='records'), 'Loading aps', leave=False)
     ]
+
+
+def load_aps(dataset: Dataset) -> List[Document]:
+    return load_from_ovh(dataset_object_name(dataset, 'aps'), 'misc', _load_aps)
 
 
 def load_am_metadata() -> Dict[str, AMMetadata]:

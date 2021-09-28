@@ -1,4 +1,5 @@
-'''Generate classement references from georisques CSV for envinorma app'''
+'''Generate classement references from georisques CSV for envinorma app.
+Deprecated as Georisques files is not updated anymore'''
 import os
 from collections import Counter
 from typing import Set, Tuple, Union

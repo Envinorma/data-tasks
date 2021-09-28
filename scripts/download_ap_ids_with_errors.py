@@ -8,7 +8,7 @@ from typing import Iterable, List, Literal, Optional, Set, Tuple, TypeVar
 import requests
 from tqdm import tqdm
 
-from tasks.common.ovh import OVHClient
+from tasks.common.ovh import OVHClient, bucket_url
 
 T = TypeVar('T')
 
@@ -20,8 +20,7 @@ def _typed_tqdm(
 
 
 _GEORISQUES_ID_REGEXP = re.compile(r'^[A-Z]{1}/[a-f0-9]{1}/[a-f0-9]{32}\.')
-_BUCKET_URL = 'https://storage.sbg.cloud.ovh.net/v1/AUTH_3287ea227a904f04ad4e8bceb0776108/ap'
-
+_BUCKET_URL = bucket_url('ap')
 _OCRStatus = Literal['error', 'success']
 
 

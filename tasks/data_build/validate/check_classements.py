@@ -3,7 +3,9 @@ from typing import Any, Dict, List, Optional
 import pandas
 from envinorma.models import DetailedClassement, DetailedRegime
 
-from ..filenames import dataset_filename
+from tasks.common.ovh import load_from_ovh
+
+from ..filenames import dataset_object_name
 
 
 def _is_47xx(rubrique: Optional[str]) -> bool:
@@ -65,7 +67,12 @@ def _row_to_classement(record: Dict[str, Any]) -> DetailedClassement:
     return classement
 
 
-def check_classements_csv(filename: str = dataset_filename('all', 'classements')) -> None:
-    dataframe = pandas.read_csv(filename, dtype='str', na_values=None, parse_dates=['date_autorisation']).fillna('')
-    classements = [_row_to_classement(record) for record in dataframe.to_dict(orient='records')]
+def check_classements_csv() -> None:
+    name = dataset_object_name('all', 'classements')
+    dataframe = load_from_ovh(
+        name,
+        'misc',
+        lambda filename: pandas.read_csv(filename, dtype='str', na_values=None, parse_dates=['date_autorisation']),
+    )
+    classements = [_row_to_classement(record) for record in dataframe.fillna('').to_dict(orient='records')]
     _check_output(classements)
