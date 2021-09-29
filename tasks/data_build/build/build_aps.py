@@ -9,7 +9,7 @@ from envinorma.models.document import Document, DocumentType
 from tasks.common.ovh import OVHClient, dump_in_ovh, load_from_ovh
 from tasks.data_build.config import AM_SLACK_URL
 from tasks.data_build.filenames import Dataset, dataset_object_name
-from tasks.data_build.load import load_aps, load_documents_from_csv
+from tasks.data_build.load import load_documents_from_csv
 
 OCRStatus = Literal['ERROR', 'SUCCESS', 'NOT_ATTEMPTED']
 
@@ -94,23 +94,22 @@ def _print_stats(previous_statuses: Dict[str, OCRStatus], new_statuses: Dict[str
     nb_deleted = len(previous_statuses.keys() - new_statuses.keys())
     nb_added = len(new_statuses.keys() - previous_statuses.keys())
     status_pairs = Counter(
-        [(previous_statuses[id], new_statuses[id]) for id in new_statuses.keys() if id in previous_statuses]
+        [(previous_statuses[id], new_statuses[id]) for id in new_statuses if id in previous_statuses]
     )
     nb_ocrised = status_pairs[('NOT_ATTEMPTED', 'SUCCESS')]
     nb_ocr_errors = status_pairs[('NOT_ATTEMPTED', 'ERROR')]
     current_ocr_statuses = Counter(new_statuses.values())
+    statuses = '\n'.join([f'\t{statut}: {nb}' for statut, nb in sorted(current_ocr_statuses.items())])
     message = (
-        f'{nb_deleted} AP supprimés.\n{nb_added} nouveaux AP\n{nb_ocrised} AP OCRisés avec succès\n{nb_ocr_errors} erreurs d\'OCR.'
-        f'\nStatuts actuels de l\'OCR:\n'
-        '\n'.join([f'\t{statut}: {nb}' for statut, nb in sorted(current_ocr_statuses.items())])
+        f'{nb_deleted} AP supprimés.\n{nb_added} nouveaux AP.\n{nb_ocrised} AP OCRisés avec succès.\n{nb_ocr_errors} erreurs d\'OCR.'
+        f'\nStatuts actuels de l\'OCR:\n{statuses}'
     )
     _post_to_slack(message)
     print(message)
 
 
 def _load_id_to_status() -> Dict[str, OCRStatus]:
-    aps = load_aps('all')
-    ids = [ap.georisques_id for ap in aps]
+    ids = [ap.georisques_id for ap in load_documents_from_csv('all') if ap.type == DocumentType.AP]
     return {key: value for key, (value, _) in _fetch_ap_status_and_size(ids).items()}
 
 
