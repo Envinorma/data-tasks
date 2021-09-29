@@ -13,3 +13,5 @@ venv
 # misc
 .vscode
 .pytest_cache
+tmp
+old_parametrizations.json

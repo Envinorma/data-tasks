@@ -177,6 +177,7 @@ def _run_ocr(force_redo_ocr: bool) -> None:
     for id_ in typed_tqdm(ids):
         if _file_already_processed(id_) and not force_redo_ocr:
             continue
+        print(f'{datetime.now()} - Processing {id_}')
         try:
             _download_ocr_and_upload_document(id_)
         except Exception:
