@@ -101,6 +101,7 @@ def _print_stats(previous_statuses: Dict[str, OCRStatus], new_statuses: Dict[str
     current_ocr_statuses = Counter(new_statuses.values())
     statuses = '\n'.join([f'\t{statut}: {nb}' for statut, nb in sorted(current_ocr_statuses.items())])
     message = (
+        '*Depuis la dernière mise à jour du fichier aps_all.csv*'
         f'{nb_deleted} AP supprimés.\n{nb_added} nouveaux AP.\n{nb_ocrised} AP OCRisés avec succès.\n{nb_ocr_errors} erreurs d\'OCR.'
         f'\nStatuts actuels de l\'OCR:\n{statuses}'
     )
@@ -108,9 +109,16 @@ def _print_stats(previous_statuses: Dict[str, OCRStatus], new_statuses: Dict[str
     print(message)
 
 
+def _load_aps_csv() -> pandas.DataFrame:
+    return load_from_ovh(dataset_object_name('all', 'aps'), 'misc', pandas.read_csv)
+
+
 def _load_id_to_status() -> Dict[str, OCRStatus]:
-    ids = [ap.georisques_id for ap in load_documents_from_csv('all') if ap.type == DocumentType.AP]
-    return {key: value for key, (value, _) in _fetch_ap_status_and_size(ids).items()}
+    try:
+        dataframe = _load_aps_csv()
+    except Exception:
+        return {}  # No previous dataframe, so no previous status
+    return dict(zip(dataframe.georisques_id.tolist(), dataframe.ocr_status.tolist()))
 
 
 def dump_ap_datasets() -> None:
