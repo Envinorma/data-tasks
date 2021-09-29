@@ -101,7 +101,7 @@ def _print_stats(previous_statuses: Dict[str, OCRStatus], new_statuses: Dict[str
     current_ocr_statuses = Counter(new_statuses.values())
     statuses = '\n'.join([f'\t{statut}: {nb}' for statut, nb in sorted(current_ocr_statuses.items())])
     message = (
-        '*Depuis la dernière mise à jour du fichier aps_all.csv*'
+        '*Depuis la dernière mise à jour du fichier aps_all.csv*\n'
         f'{nb_deleted} AP supprimés.\n{nb_added} nouveaux AP.\n{nb_ocrised} AP OCRisés avec succès.\n{nb_ocr_errors} erreurs d\'OCR.'
         f'\nStatuts actuels de l\'OCR:\n{statuses}'
     )
