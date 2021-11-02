@@ -91,14 +91,19 @@ def _check_installations(installations: pd.DataFrame) -> None:
         _dataframe_record_to_installation(record)
 
 
+_ACCEPTED_STATUSES = {ActivityStatus.EN_FONCTIONNEMENT.value, ActivityStatus.EN_CONSTRUCTION.value}
+
+
+def _active_or_in_construction(activity_status: str) -> bool:
+    return activity_status in _ACCEPTED_STATUSES
+
+
 def build_installations_csv() -> None:
     A_E_installations = _load_A_E_installations()
     installations_with_renamed_columns = _rename_installations_columns(A_E_installations)
     final_installations = _modify_and_keep_final_installations_cols(installations_with_renamed_columns)
     _check_installations(final_installations)
-    final_active_installations = final_installations[
-        final_installations.active == ActivityStatus.EN_FONCTIONNEMENT.value
-    ]
+    final_active_installations = final_installations[final_installations.active.apply(_active_or_in_construction)]
     name = dataset_object_name('all', 'installations')
     dump_in_ovh(name, 'misc', lambda filename: final_active_installations.to_csv(filename, index=False))
     print(f'Dumped {final_active_installations.shape[0]} active installations.')

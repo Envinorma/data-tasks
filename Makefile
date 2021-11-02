@@ -10,6 +10,9 @@ generate-am:
 generate-ap:
 	python3 -m tasks.data_build.generate_data --handle-aps
 
+generate-installations-data:
+	python3 -m tasks.data_build.generate_data --handle-installations-data
+
 download-backup:
 	sh scripts/download_backup.sh
 
