@@ -6,7 +6,7 @@ import random
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from envinorma.from_legifrance import legifrance_to_am
+from envinorma.from_legifrance.legifrance_to_am import legifrance_to_arrete_ministeriel
 from envinorma.models import AMSource, ArreteMinisteriel
 from leginorma import LegifranceClient
 from leginorma.models import LegifranceText
@@ -20,7 +20,7 @@ def _load_legifrance_version(am_id: str) -> ArreteMinisteriel:
     client = LegifranceClient(LEGIFRANCE_CLIENT_ID, LEGIFRANCE_CLIENT_SECRET)
     legifrance_current_version = LegifranceText.from_dict(client.consult_law_decree(am_id))
     random.seed(legifrance_current_version.title)
-    return legifrance_to_am(legifrance_current_version, am_id=am_id)
+    return legifrance_to_arrete_ministeriel(legifrance_current_version, am_id=am_id)
 
 
 def _clean_line(line: str) -> str:
