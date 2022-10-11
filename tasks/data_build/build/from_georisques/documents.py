@@ -20,7 +20,26 @@ def _download_and_extract_zip() -> None:
     zip_file = os.path.join(GEORISQUES_DATA_FOLDER, 'georisques_data.tar.gz')
     download_document(GEORISQUES_DUMP_URL, zip_file)
     with tarfile.open(zip_file, 'r:gz') as zip_ref:
-        zip_ref.extractall(GEORISQUES_DATA_FOLDER)
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(zip_ref, GEORISQUES_DATA_FOLDER)
 
 
 def _load_georisques_documents() -> pd.DataFrame:
